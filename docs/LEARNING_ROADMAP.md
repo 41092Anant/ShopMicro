@@ -43,7 +43,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 1.3**: Configure local HTTP port `5001` in `src/Catalog.Api/Properties/launchSettings.json`.
 
 #### Milestone 1B: EF Core & Database Model
-- [ ] **Task 1.4**: Add NuGet packages: `Npgsql.EntityFrameworkCore.PostgreSQL` and `Microsoft.EntityFrameworkCore.Design`.
+- [x] **Task 1.4**: Add NuGet packages: `Npgsql.EntityFrameworkCore.PostgreSQL` and `Microsoft.EntityFrameworkCore.Design`.
 - [ ] **Task 1.5**: Create the internal database entity `src/Catalog.Api/Models/Product.cs` (`Id`, `Name`, `Description`, `Price`, `IsActive`, `CreatedUtc`).
 - [ ] **Task 1.6**: Create `src/Catalog.Api/Data/CatalogDbContext.cs` and configure property constraints via Fluent API.
 - [ ] **Task 1.7**: Add the PostgreSQL connection string to `appsettings.json` and register `CatalogDbContext` in `Program.cs`.
