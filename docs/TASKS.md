@@ -37,7 +37,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 1.13**: Add `GET /products/{id}` with 200 OK and 404 ProblemDetails.
 - [x] **Task 1.14**: Add `POST /products` with 201 CreatedAtAction and 400 validation response.
 - [x] **Task 1.15**: Add `PUT /products/{id}` and `DELETE /products/{id}`.
-- [ ] **Task 1.16**: Configure centralized error handling (`ProblemDetails`) and OpenAPI documentation in `Program.cs`.
+- [x] **Task 1.16**: Configure centralized error handling (`ProblemDetails`) and OpenAPI documentation in `Program.cs`.
 - [ ] **Task 1.17**: Create `Catalog.Api.http` file to manually execute and verify all endpoints.
 
 ---

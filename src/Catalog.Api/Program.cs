@@ -6,7 +6,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+
+// CONCEPT: STANDARDIZED RFC 7807 ProblemDetails
+// ProblemDetails provides a machine-readable format for HTTP API errors (RFC 7807).
+// Adding AddProblemDetails() registers IProblemDetailsService, ensuring consistent error structures
+// across validation failures, empty status codes, and unhandled exceptions.
+builder.Services.AddProblemDetails(options =>
+{
+    options.CustomizeProblemDetails = context =>
+    {
+        context.ProblemDetails.Instance = $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
+        context.ProblemDetails.Extensions.TryAdd("traceId", context.HttpContext.TraceIdentifier);
+    };
+});
+
+// CONCEPT: OPENAPI DOCUMENTATION (.NET 10)
+// ASP.NET Core provides built-in OpenAPI document generation without external third-party dependencies.
 builder.Services.AddOpenApi();
 
 // Configure EF Core with PostgreSQL
@@ -20,6 +35,12 @@ builder.Services.AddDbContext<CatalogDbContext>(options =>
 builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
+
+// Centralized error handling pipeline:
+// 1. UseExceptionHandler catches unhandled exceptions and formats them as RFC 7807 ProblemDetails (HTTP 500).
+// 2. UseStatusCodePages transforms empty error status codes (e.g. 404 for unknown routes) into RFC 7807 ProblemDetails.
+app.UseExceptionHandler();
+app.UseStatusCodePages();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
