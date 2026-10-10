@@ -38,7 +38,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 
 ### Phase 1: Catalog API & PostgreSQL
 #### Milestone 1A: Project Scaffolding
-- [ ] **Task 1.1**: Scaffold a blank ASP.NET Core Web API project (`Catalog.Api`) with Controllers and add it to `ShopMicro.sln`.
+- [x] **Task 1.1**: Scaffold a blank ASP.NET Core Web API project (`Catalog.Api`) with Controllers and add it to `ShopMicro.sln`.
 - [ ] **Task 1.2**: Inspect default files and remove template boilerplate (`WeatherForecast.cs` and `WeatherForecastController.cs`).
 - [ ] **Task 1.3**: Configure local HTTP port `5001` in `src/Catalog.Api/Properties/launchSettings.json`.
 
