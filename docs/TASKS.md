@@ -58,7 +58,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 3.3**: Create root `docker-compose.yml` with `catalog-db` (PostgreSQL) service and persistent volume.
 - [x] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
 - [x] **Task 3.5**: Configure PostgreSQL health check and container startup dependencies.
-- [ ] **Task 3.6**: Create `.env.example` with non-production credentials.
+- [x] **Task 3.6**: Create `.env.example` with non-production credentials.
 - [ ] **Task 3.7**: Verify container startup and data persistence across restarts.
 
 ## Phase 4: Order API & Synchronous Inter-Service Calls
