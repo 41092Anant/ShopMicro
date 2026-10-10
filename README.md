@@ -56,4 +56,5 @@ d:/CICD/
 ## Current Status
 
 * **Phase 0:** Environment, solution setup, and decision records (Completed)
-* **Phase 1:** Catalog API and PostgreSQL (Upcoming)
+* **Phase 1:** Catalog API and PostgreSQL (Completed)
+* **Phase 2:** Unit Testing and CI Pipeline (Upcoming)

@@ -62,7 +62,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 1.16**: Add `POST /products` with `201 CreatedAtAction` and validation error handling.
 - [x] **Task 1.17**: Add `PUT /products/{id}` and `DELETE /products/{id}` endpoints.
 - [x] **Task 1.18**: Configure standardized RFC 7807 `ProblemDetails` and OpenAPI documentation in `Program.cs`.
-- [ ] **Task 1.19**: Create `src/Catalog.Api/Catalog.Api.http` to test all endpoints.
+- [x] **Task 1.19**: Create `src/Catalog.Api/Catalog.Api.http` to test all endpoints.
 
 ---
 
