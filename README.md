@@ -58,4 +58,5 @@ d:/CICD/
 * **Phase 0:** Environment, solution setup, and decision records (Completed)
 * **Phase 1:** Catalog API and PostgreSQL (Completed)
 * **Phase 2:** Unit Testing and CI Pipeline (Completed)
-* **Phase 3:** Docker & Local Compose (Upcoming)
+* **Phase 3:** Docker & Local Compose (Completed)
+* **Phase 4:** Order API & Synchronous Inter-Service Calls (Upcoming)

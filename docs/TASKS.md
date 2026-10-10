@@ -59,10 +59,20 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
 - [x] **Task 3.5**: Configure PostgreSQL health check and container startup dependencies.
 - [x] **Task 3.6**: Create `.env.example` with non-production credentials.
-- [ ] **Task 3.7**: Verify container startup and data persistence across restarts.
+- [x] **Task 3.7**: Verify container startup and data persistence across restarts.
 
 ## Phase 4: Order API & Synchronous Inter-Service Calls
-- Tasks will be detailed when Phase 3 is complete.
+- [ ] **Task 4.1**: Create `Order.Api` Web API project and add to `ShopMicro.sln`.
+- [ ] **Task 4.2**: Configure local port `5002` in `launchSettings.json`.
+- [ ] **Task 4.3**: Add EF Core SQL Server packages to `Order.Api`.
+- [ ] **Task 4.4**: Create `Order` and `OrderItem` models and `OrderDbContext`.
+- [ ] **Task 4.5**: Add SQL Server service to `docker-compose.yml`.
+- [ ] **Task 4.6**: Create DTO contract for Catalog product lookup (no shared entities!).
+- [ ] **Task 4.7**: Register typed `HttpClient` in `Order.Api` for calling `Catalog.Api`.
+- [ ] **Task 4.8**: Configure resilience handler (timeouts, bounded retries).
+- [ ] **Task 4.9**: Implement `POST /orders` (validates products with Catalog API, calculates totals, saves order).
+- [ ] **Task 4.10**: Implement `GET /orders/{id}`.
+- [ ] **Task 4.11**: Handle downstream Catalog API downtime gracefully with RFC 7807 error responses.
 
 ## Phase 5: YARP Gateway & Redis Caching
 - Tasks will be detailed when Phase 4 is complete.
