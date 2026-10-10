@@ -1,4 +1,5 @@
 using Catalog.Api.Data;
+using Catalog.Api.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,9 @@ builder.Services.AddDbContext<CatalogDbContext>(options =>
 {
     options.UseNpgsql(connectionString);
 });
+
+// Register application service dependencies (Scoped = created once per HTTP request)
+builder.Services.AddScoped<IProductService, ProductService>();
 
 var app = builder.Build();
 

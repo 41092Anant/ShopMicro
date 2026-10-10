@@ -54,10 +54,10 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 1.10**: Create public request DTO `src/Catalog.Api/Contracts/UpdateProductRequest.cs` with validation attributes.
 - [x] **Task 1.11**: Create public response DTO `src/Catalog.Api/Contracts/ProductResponse.cs`.
 - [x] **Task 1.12**: Define interface `src/Catalog.Api/Services/IProductService.cs` with async operations and `CancellationToken`.
-- [ ] **Task 1.13**: Implement `src/Catalog.Api/Services/ProductService.cs` and register it in `Program.cs`.
+- [x] **Task 1.13**: Implement `src/Catalog.Api/Services/ProductService.cs` and register it in `Program.cs`.
 
 #### Milestone 1D: Controllers & Error Handling
-- [ ] **Task 1.14**: Create `src/Catalog.Api/Controllers/ProductsController.cs` with `GET /products` (list all products).
+- [x] **Task 1.14**: Create `src/Catalog.Api/Controllers/ProductsController.cs` with `GET /products` (list all products).
 - [ ] **Task 1.15**: Add `GET /products/{id}` with `200 OK` and `404 ProblemDetails` responses.
 - [ ] **Task 1.16**: Add `POST /products` with `201 CreatedAtAction` and validation error handling.
 - [ ] **Task 1.17**: Add `PUT /products/{id}` and `DELETE /products/{id}` endpoints.
