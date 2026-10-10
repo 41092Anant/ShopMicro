@@ -1,0 +1,17 @@
+services:
+  catalog-db:
+    image: postgres:17-alpine
+    container_name: shopmicro-catalog-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: catalogdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - catalog-db-data:/var/lib/postgresql/data
+
+volumes:
+  catalog-db-data:
+    name: shopmicro-catalog-db-data

@@ -55,7 +55,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 ## Phase 3: Docker & Local Compose
 - [x] **Task 3.1**: Create multi-stage `Dockerfile` for `Catalog.Api`.
 - [x] **Task 3.2**: Create `.dockerignore` file.
-- [ ] **Task 3.3**: Create root `docker-compose.yml` with `catalog-db` (PostgreSQL) service and persistent volume.
+- [x] **Task 3.3**: Create root `docker-compose.yml` with `catalog-db` (PostgreSQL) service and persistent volume.
 - [ ] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
 - [ ] **Task 3.5**: Configure PostgreSQL health check and container startup dependencies.
 - [ ] **Task 3.6**: Create `.env.example` with non-production credentials.
