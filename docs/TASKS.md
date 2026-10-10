@@ -43,7 +43,14 @@ This document breaks down our microservices learning into atomic, single-step ta
 ---
 
 ## Phase 2: Unit Testing & CI
-- Tasks will be detailed when Phase 1 is complete.
+- [x] **Task 2.1**: Create xUnit test project `tests/Catalog.Tests` and add it to `ShopMicro.sln`.
+- [ ] **Task 2.2**: Add project reference from `Catalog.Tests` to `Catalog.Api`.
+- [ ] **Task 2.3**: Write unit tests for product creation validation (e.g., negative price rejected).
+- [ ] **Task 2.4**: Write unit tests for get product by ID (found vs. not found).
+- [ ] **Task 2.5**: Write unit tests for product updates and soft/hard deletes.
+- [ ] **Task 2.6**: Run tests locally and verify all pass.
+- [ ] **Task 2.7**: Create GitHub Actions CI workflow file `.github/workflows/ci.yml`.
+- [ ] **Task 2.8**: Demonstrate a deliberately failing test to verify CI error detection.
 
 ## Phase 3: Docker & PostgreSQL Container
 - Tasks will be detailed when Phase 2 is complete.
