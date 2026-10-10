@@ -93,4 +93,68 @@ public class ProductsController : ControllerBase
         var created = await _productService.CreateAsync(request, cancellationToken);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
+
+    /// <summary>
+    /// PUT /products/{id} - Replaces an existing product's details.
+    /// 
+    /// CONCEPT: HTTP PUT (Idempotent Update)
+    /// PUT replaces the entire resource representation. If repeated multiple times with the same payload,
+    /// the end state of the server is identical (idempotent).
+    /// 
+    /// CONCEPT: 404 ProblemDetails vs. 400 ValidationProblemDetails
+    /// - 404: Returned if the product with the specified ID does not exist in the database.
+    /// - 400: Automatically returned by ASP.NET Core [ApiController] if request body validation fails.
+    /// - 200: Returns the updated product representation.
+    /// </summary>
+    [HttpPut("{id:guid}")]
+    [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ProductResponse>> Update(
+        Guid id,
+        [FromBody] UpdateProductRequest request,
+        CancellationToken cancellationToken)
+    {
+        var updated = await _productService.UpdateAsync(id, request, cancellationToken);
+        if (updated is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Product Not Found",
+                Detail = $"Product with ID '{id}' was not found."
+            });
+        }
+
+        return Ok(updated);
+    }
+
+    /// <summary>
+    /// DELETE /products/{id} - Deletes a product by its unique GUID identifier.
+    /// 
+    /// CONCEPT: HTTP 204 NoContent
+    /// When a resource is successfully deleted, the standard HTTP response is 204 No Content
+    /// (the operation succeeded, but there is no entity body to return).
+    /// 
+    /// CONCEPT: 404 ProblemDetails
+    /// If attempting to delete a product that does not exist, return 404 Not Found with RFC 7807 ProblemDetails.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var deleted = await _productService.DeleteAsync(id, cancellationToken);
+        if (!deleted)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Product Not Found",
+                Detail = $"Product with ID '{id}' was not found."
+            });
+        }
+
+        return NoContent();
+    }
 }

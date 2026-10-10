@@ -60,7 +60,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 1.14**: Create `src/Catalog.Api/Controllers/ProductsController.cs` with `GET /products` (list all products).
 - [x] **Task 1.15**: Add `GET /products/{id}` with `200 OK` and `404 ProblemDetails` responses.
 - [x] **Task 1.16**: Add `POST /products` with `201 CreatedAtAction` and validation error handling.
-- [ ] **Task 1.17**: Add `PUT /products/{id}` and `DELETE /products/{id}` endpoints.
+- [x] **Task 1.17**: Add `PUT /products/{id}` and `DELETE /products/{id}` endpoints.
 - [ ] **Task 1.18**: Configure standardized RFC 7807 `ProblemDetails` and OpenAPI documentation in `Program.cs`.
 - [ ] **Task 1.19**: Create `src/Catalog.Api/Catalog.Api.http` to test all endpoints.
 
