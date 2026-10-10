@@ -44,4 +44,53 @@ public class ProductsController : ControllerBase
         var products = await _productService.GetAllAsync(cancellationToken);
         return Ok(products);
     }
+
+    /// <summary>
+    /// GET /products/{id} - Returns a single product by its unique GUID identifier.
+    /// 
+    /// CONCEPT: ROUTE CONSTRAINT "{id:guid}"
+    /// Restricts the route parameter to valid GUID format. If a caller requests /products/123-abc (not a guid),
+    /// ASP.NET Core automatically rejects it with 404 before reaching our code.
+    /// 
+    /// CONCEPT: RFC 7807 ProblemDetails
+    /// If product is missing, we return a structured ProblemDetails object with 404 Not Found status.
+    /// </summary>
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ProductResponse>> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var product = await _productService.GetByIdAsync(id, cancellationToken);
+        if (product is null)
+        {
+            return NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Product Not Found",
+                Detail = $"Product with ID '{id}' was not found."
+            });
+        }
+
+        return Ok(product);
+    }
+
+    /// <summary>
+    /// POST /products - Creates a new product in the catalog.
+    /// 
+    /// CONCEPT: HTTP 201 CreatedAtAction
+    /// In REST API standards, when a new resource is created:
+    /// 1. Return HTTP 201 Created (not just 200 OK).
+    /// 2. Include a 'Location' HTTP header containing the URL to read the newly created resource (/products/{id}).
+    /// 3. Return the created product body.
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(ProductResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<ProductResponse>> Create(
+        [FromBody] CreateProductRequest request,
+        CancellationToken cancellationToken)
+    {
+        var created = await _productService.CreateAsync(request, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+    }
 }
