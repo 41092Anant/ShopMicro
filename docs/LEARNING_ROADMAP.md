@@ -52,8 +52,8 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 #### Milestone 1C: API Contracts (DTOs) & Service Layer
 - [x] **Task 1.9**: Create public request DTO `src/Catalog.Api/Contracts/CreateProductRequest.cs` with validation attributes.
 - [x] **Task 1.10**: Create public request DTO `src/Catalog.Api/Contracts/UpdateProductRequest.cs` with validation attributes.
-- [ ] **Task 1.11**: Create public response DTO `src/Catalog.Api/Contracts/ProductResponse.cs`.
-- [ ] **Task 1.12**: Define interface `src/Catalog.Api/Services/IProductService.cs` with async operations and `CancellationToken`.
+- [x] **Task 1.11**: Create public response DTO `src/Catalog.Api/Contracts/ProductResponse.cs`.
+- [x] **Task 1.12**: Define interface `src/Catalog.Api/Services/IProductService.cs` with async operations and `CancellationToken`.
 - [ ] **Task 1.13**: Implement `src/Catalog.Api/Services/ProductService.cs` and register it in `Program.cs`.
 
 #### Milestone 1D: Controllers & Error Handling
