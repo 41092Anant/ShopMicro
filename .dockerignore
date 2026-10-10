@@ -1,0 +1,28 @@
+# Git repository metadata
+**/.git
+**/.gitignore
+
+# IDE and Editor files
+**/.vs
+**/.vscode
+**/.idea
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# Build artifacts & compilation output (prevents copying host binaries into Linux container)
+**/bin/
+**/obj/
+
+# Test output and code coverage reports
+**/TestResults/
+
+# Documentation and markdown files (not needed inside runtime container)
+*.md
+docs/
+
+# Environment files and credentials (security protection)
+**/.env
+**/.env.*
+!**/.env.example
