@@ -12,14 +12,14 @@ using System.ComponentModel.DataAnnotations;
 /// Having separate DTOs keeps API contracts explicit and prevents unintentional state changes.
 /// </summary>
 public record UpdateProductRequest(
-    [Required(ErrorMessage = "Product name is required.")]
-    [StringLength(200, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 200 characters.")]
+    [property: Required(ErrorMessage = "Product name is required.")]
+    [property: StringLength(200, MinimumLength = 1, ErrorMessage = "Name must be between 1 and 200 characters.")]
     string Name,
 
-    [StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
+    [property: StringLength(1000, ErrorMessage = "Description cannot exceed 1000 characters.")]
     string? Description,
 
-    [Range(0.01, 1000000.00, ErrorMessage = "Price must be greater than zero.")]
+    [property: Range(0.01, 1000000.00, ErrorMessage = "Price must be greater than zero.")]
     decimal Price,
 
     bool IsActive
