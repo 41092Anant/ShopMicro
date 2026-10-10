@@ -11,6 +11,31 @@ services:
       - "5432:5432"
     volumes:
       - catalog-db-data:/var/lib/postgresql/data
+    networks:
+      - shopmicro-network
+
+  catalog-api:
+    image: shopmicro-catalog-api
+    container_name: shopmicro-catalog-api
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: src/Catalog.Api/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=5001
+      - ConnectionStrings__CatalogDb=Host=catalog-db;Port=5432;Database=catalogdb;Username=postgres;Password=postgres
+    depends_on:
+      - catalog-db
+    networks:
+      - shopmicro-network
+
+networks:
+  shopmicro-network:
+    name: shopmicro-network
+    driver: bridge
 
 volumes:
   catalog-db-data:

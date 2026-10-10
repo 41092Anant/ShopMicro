@@ -82,7 +82,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 3.1**: Create multi-stage `Dockerfile` for `Catalog.Api`.
 - [x] **Task 3.2**: Create `.dockerignore` file.
 - [x] **Task 3.3**: Create root `docker-compose.yml` with `catalog-db` (PostgreSQL) service and persistent volume.
-- [ ] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
+- [x] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
 - [ ] **Task 3.5**: Configure PostgreSQL health check and container startup dependencies.
 - [ ] **Task 3.6**: Create `.env.example` with non-production credentials.
 - [ ] **Task 3.7**: Verify container startup and data persistence across restarts.
