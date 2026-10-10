@@ -50,10 +50,16 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 2.5**: Write unit tests for product updates and soft/hard deletes.
 - [x] **Task 2.6**: Run tests locally and verify all pass.
 - [x] **Task 2.7**: Create GitHub Actions CI workflow file `.github/workflows/ci.yml`.
-- [ ] **Task 2.8**: Demonstrate a deliberately failing test to verify CI error detection.
+- [x] **Task 2.8**: Demonstrate a deliberately failing test to verify CI error detection.
 
-## Phase 3: Docker & PostgreSQL Container
-- Tasks will be detailed when Phase 2 is complete.
+## Phase 3: Docker & Local Compose
+- [ ] **Task 3.1**: Create multi-stage `Dockerfile` for `Catalog.Api`.
+- [ ] **Task 3.2**: Create `.dockerignore` file.
+- [ ] **Task 3.3**: Create root `docker-compose.yml` with `catalog-db` (PostgreSQL) service and persistent volume.
+- [ ] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
+- [ ] **Task 3.5**: Configure PostgreSQL health check and container startup dependencies.
+- [ ] **Task 3.6**: Create `.env.example` with non-production credentials.
+- [ ] **Task 3.7**: Verify container startup and data persistence across restarts.
 
 ## Phase 4: Order API & Synchronous Inter-Service Calls
 - Tasks will be detailed when Phase 3 is complete.

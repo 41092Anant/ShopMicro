@@ -74,7 +74,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 2.5**: Write unit tests for product updates and soft/hard deletes.
 - [x] **Task 2.6**: Run tests locally and verify all pass.
 - [x] **Task 2.7**: Create GitHub Actions CI workflow file `.github/workflows/ci.yml`.
-- [ ] **Task 2.8**: Demonstrate a deliberately failing test to verify CI error detection.
+- [x] **Task 2.8**: Demonstrate a deliberately failing test to verify CI error detection.
 
 ---
 
