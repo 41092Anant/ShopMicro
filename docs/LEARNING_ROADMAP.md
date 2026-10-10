@@ -79,7 +79,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 ---
 
 ### Phase 3: Docker & Local Compose
-- [ ] **Task 3.1**: Create multi-stage `Dockerfile` for `Catalog.Api`.
+- [x] **Task 3.1**: Create multi-stage `Dockerfile` for `Catalog.Api`.
 - [ ] **Task 3.2**: Create `.dockerignore` file.
 - [ ] **Task 3.3**: Create root `docker-compose.yml` with `catalog-db` (PostgreSQL) service and persistent volume.
 - [ ] **Task 3.4**: Add `catalog-api` service to `docker-compose.yml` and configure internal network DNS.
