@@ -40,7 +40,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 #### Milestone 1A: Project Scaffolding
 - [x] **Task 1.1**: Scaffold a blank ASP.NET Core Web API project (`Catalog.Api`) with Controllers and add it to `ShopMicro.sln`.
 - [x] **Task 1.2**: Inspect default files and remove template boilerplate (`WeatherForecast.cs` and `WeatherForecastController.cs`).
-- [ ] **Task 1.3**: Configure local HTTP port `5001` in `src/Catalog.Api/Properties/launchSettings.json`.
+- [x] **Task 1.3**: Configure local HTTP port `5001` in `src/Catalog.Api/Properties/launchSettings.json`.
 
 #### Milestone 1B: EF Core & Database Model
 - [ ] **Task 1.4**: Add NuGet packages: `Npgsql.EntityFrameworkCore.PostgreSQL` and `Microsoft.EntityFrameworkCore.Design`.
