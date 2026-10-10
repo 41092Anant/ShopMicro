@@ -11,6 +11,12 @@ services:
       - "5432:5432"
     volumes:
       - catalog-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d catalogdb"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - shopmicro-network
 
@@ -28,7 +34,8 @@ services:
       - ASPNETCORE_HTTP_PORTS=5001
       - ConnectionStrings__CatalogDb=Host=catalog-db;Port=5432;Database=catalogdb;Username=postgres;Password=postgres
     depends_on:
-      - catalog-db
+      catalog-db:
+        condition: service_healthy
     networks:
       - shopmicro-network
 
