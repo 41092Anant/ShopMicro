@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Order.Api.Clients;
 using Order.Api.Data;
+using Order.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,6 +44,9 @@ builder.Services.AddHttpClient<ICatalogClient, CatalogClient>(client =>
     options.Retry.MaxRetryAttempts = 3;
     options.Retry.Delay = TimeSpan.FromMilliseconds(200);
 });
+
+// Register application services (Scoped = created once per HTTP request)
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 var app = builder.Build();
 

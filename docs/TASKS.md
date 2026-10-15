@@ -70,8 +70,8 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 4.6**: Create DTO contract for Catalog product lookup (no shared entities!).
 - [x] **Task 4.7**: Register typed `HttpClient` in `Order.Api` for calling `Catalog.Api`.
 - [x] **Task 4.8**: Configure resilience handler (timeouts, bounded retries).
-- [ ] **Task 4.9**: Implement `POST /orders` (validates products with Catalog API, calculates totals, saves order).
-- [ ] **Task 4.10**: Implement `GET /orders/{id}`.
+- [x] **Task 4.9**: Implement `POST /orders` (validates products with Catalog API, calculates totals, saves order).
+- [x] **Task 4.10**: Implement `GET /orders/{id}`.
 - [ ] **Task 4.11**: Handle downstream Catalog API downtime gracefully with RFC 7807 error responses.
 
 ## Phase 5: YARP Gateway & Redis Caching
