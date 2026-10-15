@@ -39,6 +39,27 @@ services:
     networks:
       - shopmicro-network
 
+  order-db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: shopmicro-order-db
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Password123!}
+      MSSQL_PID: Developer
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - order-db-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD:-Password123!}\" -C -Q \"SELECT 1\" || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P \"$${MSSQL_SA_PASSWORD:-Password123!}\" -Q \"SELECT 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - shopmicro-network
+
 networks:
   shopmicro-network:
     name: shopmicro-network
@@ -47,3 +68,5 @@ networks:
 volumes:
   catalog-db-data:
     name: shopmicro-catalog-db-data
+  order-db-data:
+    name: shopmicro-order-db-data
