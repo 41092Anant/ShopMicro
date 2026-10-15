@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShopMicro - Graphical Architecture & Progress Flow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #111827;
+      --bg-card: rgba(17, 24, 39, 0.75);
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(56, 189, 248, 0.3);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-highlight: #38bdf8;
+      --accent-cyan: #38bdf8;
+      --accent-indigo: #818cf8;
+      --accent-emerald: #34d399;
+      --accent-amber: #fbbf24;
+      --glow-blue: rgba(56, 189, 248, 0.15);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg-primary);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(129, 140, 248, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 100%, rgba(52, 211, 153, 0.05) 0px, transparent 50%);
+      background-attachment: fixed;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 0 1.5rem 4rem 1.5rem;
+    }
+
+    header {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 0 2rem 0;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .badge-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+
+    .badge-lts {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid var(--border-accent);
+    }
+
+    .badge-status {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p.subtitle {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 800px;
+    }
+
+    nav.toc {
+      max-width: 1200px;
+      margin: 1.5rem auto 2.5rem auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    nav.toc a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      padding: 0.4rem 0.85rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      transition: all 0.2s ease;
+    }
+
+    nav.toc a:hover {
+      color: #fff;
+      background: rgba(56, 189, 248, 0.1);
+      border-color: var(--border-accent);
+      transform: translateY(-1px);
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+      opacity: 0.4;
+    }
+
+    .card-header {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-description {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    .diagram-wrapper {
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      display: flex;
+      justify-content: center;
+    }
+
+    .mermaid {
+      width: 100%;
+      text-align: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th {
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--accent-cyan);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-main);
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .status-completed {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+    }
+
+    .status-next {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid var(--border-accent);
+    }
+
+    .status-upcoming {
+      background: rgba(156, 163, 175, 0.15);
+      color: var(--text-muted);
+      border: 1px solid rgba(156, 163, 175, 0.2);
+    }
+
+    footer {
+      max-width: 1200px;
+      margin: 3rem auto 0 auto;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      padding-top: 2rem;
+    }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 1.85rem; }
+      .card { padding: 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge-bar">
+      <span class="badge badge-lts">🚀 .NET 10 LTS</span>
+      <span class="badge badge-status">✅ Phase 0 to 3 Complete</span>
+      <span class="badge" style="background: rgba(129, 140, 248, 0.15); color: var(--accent-indigo); border: 1px solid rgba(129, 140, 248, 0.3);">🐳 Docker & Compose Ready</span>
+    </div>
+    <h1>ShopMicro Graphical Flow</h1>
+    <p class="subtitle">Visual architectural roadmap, runtime networking, sequence lifecycles, and container build pipelines for the ShopMicro distributed system.</p>
+  </header>
+
+  <nav class="toc">
+    <a href="#architecture-map">1. System Architecture Map</a>
+    <a href="#implementation-timeline">2. Implementation Timeline</a>
+    <a href="#request-lifecycle">3. Request Lifecycle</a>
+    <a href="#docker-build">4. Docker Multi-Stage Build</a>
+    <a href="#ci-workflow">5. CI Automated Pipeline</a>
+    <a href="#progress-matrix">6. Full Progress Matrix</a>
+  </nav>
+
+  <main>
+
+    <!-- SECTION 1 -->
+    <section id="architecture-map" class="card">
+      <div class="card-header">
+        <h2 class="card-title">1. System Architecture Map (Where We Are Today)</h2>
+        <p class="card-description">Shows the interaction between host development tools, Docker containers, internal bridge networks, named volumes, and cloud CI runners.</p>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TB
+    subgraph HostWorkstation ["💻 Local Workstation (Host: Windows)"]
+        BrowserClient["🌐 Web Browser / HTTP Client\n(http://localhost:5001)"]
+        HttpFile["📄 Catalog.Api.http\n(Manual API Tests)"]
+        TestSuite["🧪 xUnit Catalog.Tests\n(20 Automated Unit Tests)"]
+        DotnetCli["⚡ dotnet CLI / IDE\n(dotnet build / test / run)"]
+    end
+
+    subgraph DockerHost ["🐳 Docker Engine (Local Container Stack)"]
+        subgraph BridgeNetwork ["Custom Bridge Network: shopmicro-network"]
+            subgraph CatalogApiContainer ["Container: shopmicro-catalog-api"]
+                ApiEntry["Catalog.Api.dll (.NET 10 LTS)\nNon-Root User (UID 1654)"]
+                ApiPort["Port: 5001"]
+            end
+
+            subgraph PostgresContainer ["Container: shopmicro-catalog-db"]
+                PgEngine["PostgreSQL 17 (Alpine)"]
+                PgHealth["Health Check: pg_isready"]
+                PgPort["Port: 5432"]
+            end
+        end
+
+        subgraph PersistentStorage ["💾 Docker Named Volume"]
+            NamedVolume["shopmicro-catalog-db-data\n(/var/lib/postgresql/data)"]
+        end
+    end
+
+    subgraph GitHubCloud ["☁️ GitHub Actions CI Pipeline"]
+        CiRunner["Runner: ubuntu-latest\n(.NET 10.0.x SDK)"]
+        CiSteps["1. Checkout ➔ 2. Setup .NET ➔ 3. Restore ➔ 4. Build Release ➔ 5. Run Tests"]
+    end
+
+    BrowserClient -->|"HTTP: 5001"| ApiPort
+    HttpFile -.->|"Executes Requests"| ApiPort
+    TestSuite -.->|"Tests In-Memory"| ApiEntry
+    DotnetCli -->|"Builds & Runs"| ApiEntry
+
+    ApiEntry -->|"Internal DNS: Host=catalog-db:5432"| PgPort
+    PgEngine --- NamedVolume
+    PgHealth -.->|"Reports healthy"| ApiEntry
+
+    DotnetCli -->|"git push"| CiRunner
+    CiRunner --> CiSteps
+        </pre>
+      </div>
+    </section>
+
+    <!-- SECTION 2 -->
+    <section id="implementation-timeline" class="card">
+      <div class="card-header">
+        <h2 class="card-title">2. Step-by-Step Implementation Timeline</h2>
+        <p class="card-description">Chronological progression of all atomic tasks completed from Phase 0 to Phase 3.</p>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart LR
+    subgraph P0 ["Phase 0: Foundation"]
+        T01["0.1 Git & .gitignore"] --> T02["0.2 Solution ShopMicro.sln"]
+        T02 --> T03["0.3 Coding Rules (AGENTS.md)"]
+        T03 --> T04["0.4 ADRs (DECISIONS.md)"]
+        T04 --> T05["0.5 Architecture Overview (README.md)"]
+    end
+
+    subgraph P1 ["Phase 1: Catalog API & Postgres"]
+        T11["1.1-1.3 Project Scaffold (Port 5001)"] --> T12["1.4-1.8 Models, EF Core & Migrations"]
+        T12 --> T13["1.9-1.13 DTOs, Interface & Service"]
+        T13 --> T14["1.14-1.17 CRUD Controller Endpoints"]
+        T14 --> T15["1.18 RFC 7807 ProblemDetails"]
+        T15 --> T16["1.19 Native Catalog.Api.http"]
+    end
+
+    subgraph P2 ["Phase 2: Unit Testing & CI"]
+        T21["2.1-2.2 xUnit Test Project (.NET 10)"] --> T22["2.3 DTO Validation Tests"]
+        T22 --> T23["2.4-2.5 Service & Controller Tests"]
+        T23 --> T24["2.6 Local Verification (20/20 Pass)"]
+        T24 --> T25["2.7 GitHub Actions CI Workflow"]
+        T25 --> T26["2.8 Deliberate Failure Demonstration"]
+    end
+
+    subgraph P3 ["Phase 3: Docker & Compose"]
+        T31["3.1 Multi-Stage Dockerfile (.NET 10)"] --> T32["3.2 Root .dockerignore"]
+        T32 --> T33["3.3 Compose: PostgreSQL & Volume"]
+        T33 --> T34["3.4 Compose: Catalog API & DNS Network"]
+        T34 --> T35["3.5 Health Check (pg_isready)"]
+        T35 --> T36["3.6 .env.example Security Template"]
+        T36 --> T37["3.7 Full Container Lifecycle Verified"]
+    end
+
+    P0 --> P1 --> P2 --> P3
+        </pre>
+      </div>
+    </section>
+
+    <!-- SECTION 3 -->
+    <section id="request-lifecycle" class="card">
+      <div class="card-header">
+        <h2 class="card-title">3. The API Request-Response Lifecycle</h2>
+        <p class="card-description">Sequence flow demonstrating validation, business logic execution, EF Core persistence, and RFC 7807 ProblemDetails handling.</p>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Client as Client / HTTP Runner
+    participant Pipeline as ASP.NET Core Middleware
+    participant Controller as ProductsController
+    participant Service as ProductService
+    participant Db as CatalogDbContext (EF Core)
+    participant Postgres as PostgreSQL (catalogdb)
+
+    Note over Client, Pipeline: Incoming HTTP Request (e.g. POST /products)
+    Client->>Pipeline: POST /products { "name": "Desk", "price": 199.99 }
+    
+    alt Validation Failure (e.g. Price < 0)
+        Pipeline-->>Client: 400 Bad Request (ValidationProblemDetails)
+    else Valid Payload
+        Pipeline->>Controller: Route to Create(request, cancellationToken)
+        Controller->>Service: CreateAsync(request, cancellationToken)
+        Service->>Db: AddAsync(product, cancellationToken)
+        Db->>Postgres: INSERT INTO "Products" VALUES (...)
+        Postgres-->>Db: Acknowledge & Persist
+        Db-->>Service: SaveChangesAsync() Done
+        Service-->>Controller: Return ProductResponse DTO
+        Controller-->>Client: 201 Created (Location: /products/{id}, Body: ProductResponse)
+    end
+
+    Note over Client, Pipeline: Missing Item Request (e.g. GET /products/{missing-guid})
+    Client->>Pipeline: GET /products/{id}
+    Pipeline->>Controller: Route to GetById(id, cancellationToken)
+    Controller->>Service: GetByIdAsync(id, cancellationToken)
+    Service->>Db: Products.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id)
+    Db->>Postgres: SELECT * FROM "Products" WHERE "Id" = id LIMIT 1
+    Postgres-->>Db: NULL (Not Found)
+    Db-->>Service: null
+    Service-->>Controller: null
+    Controller-->>Client: 404 Not Found (RFC 7807 ProblemDetails + traceId)
+        </pre>
+      </div>
+    </section>
+
+    <!-- SECTION 4 -->
+    <section id="docker-build" class="card">
+      <div class="card-header">
+        <h2 class="card-title">4. Multi-Stage Docker Build Flow</h2>
+        <p class="card-description">Visual breakdown of how SDK compilers are isolated from the slim production runtime container.</p>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    subgraph StageBuild ["Stage 2: Build & Restore (mcr.microsoft.com/dotnet/sdk:10.0)"]
+        CopyCsproj["1. COPY Catalog.Api.csproj"]
+        Restore["2. RUN dotnet restore\n(Cached Layer if dependencies don't change)"]
+        CopyCode["3. COPY remaining source code"]
+        Compile["4. RUN dotnet build -c Release"]
+        CopyCsproj --> Restore --> CopyCode --> Compile
+    end
+
+    subgraph StagePublish ["Stage 3: Publish (Intermediate)"]
+        Publish["5. RUN dotnet publish -c Release -o /app/publish"]
+        Compile --> Publish
+    end
+
+    subgraph StageRuntime ["Stage 1 & 4: Final Lean Runtime (mcr.microsoft.com/dotnet/aspnet:10.0)"]
+        SlimBase["Base Image (Only ASP.NET Core Runtime ~200MB)"]
+        NonRoot["Set USER $APP_UID (UID 1654)"]
+        CopyBinaries["6. COPY --from=publish /app/publish .\n(Only compiled DLLs, zero SDK tools)"]
+        Entrypoint["7. ENTRYPOINT ['dotnet', 'Catalog.Api.dll']"]
+        SlimBase --> NonRoot --> CopyBinaries --> Entrypoint
+    end
+
+    Publish -->|"Extracts compiled output"| CopyBinaries
+        </pre>
+      </div>
+    </section>
+
+    <!-- SECTION 5 -->
+    <section id="ci-workflow" class="card">
+      <div class="card-header">
+        <h2 class="card-title">5. Automated CI Pipeline Flow</h2>
+        <p class="card-description">GitHub Actions automated workflow (.github/workflows/ci.yml) validating builds and unit tests on every pull request.</p>
+      </div>
+      <div class="diagram-wrapper">
+        <pre class="mermaid">
+flowchart TD
+    GitTrigger["Git Push / Pull Request to master"] --> RunnerInit["Spin up GitHub Runner (ubuntu-latest)"]
+
+    subgraph PipelineExecution ["GitHub Actions Workflow (.github/workflows/ci.yml)"]
+        S1["Step 1: Checkout Repository\n(actions/checkout@v4)"]
+        S2["Step 2: Setup .NET 10 SDK\n(actions/setup-dotnet@v4 with '10.0.x')"]
+        S3["Step 3: Verify SDK Version\n(dotnet --version)"]
+        S4["Step 4: Restore Solution Dependencies\n(dotnet restore ShopMicro.sln)"]
+        S5["Step 5: Compile Solution in Release\n(dotnet build ShopMicro.sln --no-restore -c Release)"]
+        S6["Step 6: Execute 20 xUnit Tests in Release\n(dotnet test ShopMicro.sln --no-build -c Release)"]
+        
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    end
+
+    RunnerInit --> S1
+
+    S6 --> PassBranch{"All 20 Tests Pass?"}
+    PassBranch -->|"Yes (Exit Code 0)"| GreenCI["✅ Build & Tests Passed: Merge Permitted"]
+    PassBranch -->|"No (Exit Code 1)"| RedCI["❌ Broken Assertion: Pipeline Halts & Merge Blocked"]
+        </pre>
+      </div>
+    </section>
+
+    <!-- SECTION 6 -->
+    <section id="progress-matrix" class="card">
+      <div class="card-header">
+        <h2 class="card-title">6. Comprehensive Phase Progress Matrix</h2>
+        <p class="card-description">Summary of all milestones, deliverables, and upcoming tasks.</p>
+      </div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>Focus Area</th>
+              <th>Key Deliverables & Artifacts</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Phase 0</strong></td>
+              <td>Environment & Foundation</td>
+              <td>ShopMicro.sln, AGENTS.md, docs/DECISIONS.md (ADRs 001-005)</td>
+              <td><span class="status-pill status-completed">Completed</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 1</strong></td>
+              <td>Catalog API & PostgreSQL</td>
+              <td>Product entity, CatalogDbContext, ProductService, ProductsController, Catalog.Api.http</td>
+              <td><span class="status-pill status-completed">Completed</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 2</strong></td>
+              <td>Unit Testing & CI Pipeline</td>
+              <td>Catalog.Tests.csproj, 20 Unit Tests (Validation, Service, Controller), .github/workflows/ci.yml</td>
+              <td><span class="status-pill status-completed">Completed</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 3</strong></td>
+              <td>Docker & Local Compose</td>
+              <td>Multi-stage Dockerfile, .dockerignore, docker-compose.yml, .env.example, pg_isready healthcheck</td>
+              <td><span class="status-pill status-completed">Completed</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 4</strong></td>
+              <td>Order API & Inter-Service Calls</td>
+              <td>Order.Api, SQL Server, Inter-service HttpClient, Resilient Retry Handler, POST /orders</td>
+              <td><span class="status-pill status-next">Next Up (Task 4.1)</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 5</strong></td>
+              <td>Gateway & Redis Caching</td>
+              <td>YARP reverse proxy on port 5000, StackExchange.Redis, Cache-aside pattern</td>
+              <td><span class="status-pill status-upcoming">Upcoming</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 6</strong></td>
+              <td>RabbitMQ & Async Messaging</td>
+              <td>RabbitMQ, MassTransit, OrderCreatedEvent, Outbox pattern, Notification Worker</td>
+              <td><span class="status-pill status-upcoming">Upcoming</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 7</strong></td>
+              <td>Observability & Monitoring</td>
+              <td>OpenTelemetry, Serilog + Seq container, /health/live, /health/ready</td>
+              <td><span class="status-pill status-upcoming">Upcoming</span></td>
+            </tr>
+            <tr>
+              <td><strong>Phase 8</strong></td>
+              <td>Cloud Deployment</td>
+              <td>Azure Container Apps, Azure PostgreSQL & SQL DB, Azure Key Vault</td>
+              <td><span class="status-pill status-upcoming">Upcoming</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>ShopMicro Microservices System • Built with modern .NET 10 LTS • Clean, isolated, production-ready architecture.</p>
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0d131f',
+        primaryColor: '#1e293b',
+        primaryTextColor: '#f8fafc',
+        primaryBorderColor: '#38bdf8',
+        lineColor: '#64748b',
+        secondaryColor: '#334155',
+        tertiaryColor: '#0f172a'
+      },
+      flowchart: {
+        curve: 'basis',
+        htmlLabels: true
+      }
+    });
+  </script>
+</body>
+</html>

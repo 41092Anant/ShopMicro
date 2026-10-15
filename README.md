@@ -2,7 +2,9 @@
 
 A practical, phased microservices learning project following clean, real-world industry practices.
 
-> 📊 **Visual Flow Document:** See [docs/ARCHITECTURE_FLOW.md](docs/ARCHITECTURE_FLOW.md) for full Mermaid system diagrams, request/response lifecycles, and multi-stage container build flows.
+> 📊 **Graphical Flow Documents:**
+> - Markdown Version: [docs/GRAPHICAL_FLOW.md](docs/GRAPHICAL_FLOW.md)
+> - Interactive Web Viewer: [docs/GRAPHICAL_FLOW.html](docs/GRAPHICAL_FLOW.html) (double-click to open rendered diagrams in browser)
 
 ## Architecture Overview
 
