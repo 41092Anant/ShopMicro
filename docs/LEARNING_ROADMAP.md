@@ -92,8 +92,8 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 ### Phase 4: Order API & Synchronous Inter-Service Communication
 - [x] **Task 4.1**: Create `Order.Api` Web API project and add to `ShopMicro.sln`.
 - [x] **Task 4.2**: Configure local port `5002` in `launchSettings.json`.
-- [ ] **Task 4.3**: Add EF Core SQL Server packages to `Order.Api`.
-- [ ] **Task 4.4**: Create `Order` and `OrderItem` models and `OrderDbContext`.
+- [x] **Task 4.3**: Add EF Core SQL Server packages to `Order.Api`.
+- [x] **Task 4.4**: Create `Order` and `OrderItem` models and `OrderDbContext`.
 - [ ] **Task 4.5**: Add SQL Server service to `docker-compose.yml`.
 - [ ] **Task 4.6**: Create DTO contract for Catalog product lookup (no shared entities!).
 - [ ] **Task 4.7**: Register typed `HttpClient` in `Order.Api` for calling `Catalog.Api`.
