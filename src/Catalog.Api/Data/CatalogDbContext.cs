@@ -24,13 +24,28 @@ public class CatalogDbContext : DbContext
     }
 
     public DbSet<Product> Products => Set<Product>();
+    public DbSet<Category> Categories => Set<Category>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.ToTable("Categories");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+
+            entity.HasMany(e => e.Products)
+                  .WithOne(p => p.Category)
+                  .HasForeignKey(p => p.CategoryId)
+                  .OnDelete(DeleteBehavior.SetNull);
+        });
+
         modelBuilder.Entity<Product>(entity =>
         {
+            entity.ToTable("Products");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
