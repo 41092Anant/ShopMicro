@@ -37,6 +37,7 @@ public class ProductService : IProductService
     {
         var products = await _dbContext.Products
             .AsNoTracking()
+            .Include(p => p.Category)
             .OrderBy(p => p.Name)
             .ToListAsync(cancellationToken);
 
@@ -47,6 +48,7 @@ public class ProductService : IProductService
     {
         var product = await _dbContext.Products
             .AsNoTracking()
+            .Include(p => p.Category)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
         return product is null ? null : MapToResponse(product);
@@ -61,18 +63,26 @@ public class ProductService : IProductService
             Description = request.Description?.Trim(),
             Price = request.Price,
             IsActive = true,
-            CreatedUtc = DateTime.UtcNow
+            CreatedUtc = DateTime.UtcNow,
+            CategoryId = request.CategoryId
         };
 
         await _dbContext.Products.AddAsync(product, cancellationToken);
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        if (product.CategoryId.HasValue)
+        {
+            await _dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
+        }
 
         return MapToResponse(product);
     }
 
     public async Task<ProductResponse?> UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
     {
-        var product = await _dbContext.Products.FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        var product = await _dbContext.Products
+            .Include(p => p.Category)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
         if (product is null)
         {
             return null;
@@ -109,6 +119,8 @@ public class ProductService : IProductService
             product.Description,
             product.Price,
             product.IsActive,
-            product.CreatedUtc
+            product.CreatedUtc,
+            product.CategoryId,
+            product.Category?.Name
         );
 }

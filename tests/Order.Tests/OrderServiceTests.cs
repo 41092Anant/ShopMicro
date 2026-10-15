@@ -45,8 +45,8 @@ public class OrderServiceTests
         await using var dbContext = CreateDbContext();
         var stubCatalog = new StubCatalogClient();
 
-        var product1 = new CatalogProductDto(Guid.NewGuid(), "Mechanical Keyboard", 100.00m, true);
-        var product2 = new CatalogProductDto(Guid.NewGuid(), "Gaming Mouse", 50.00m, true);
+        var product1 = new CatalogProductDto(Guid.NewGuid(), "Mechanical Keyboard", 100.00m, true, "Electronics");
+        var product2 = new CatalogProductDto(Guid.NewGuid(), "Gaming Mouse", 50.00m, true, "Accessories");
         stubCatalog.AddProduct(product1);
         stubCatalog.AddProduct(product2);
 
@@ -80,6 +80,7 @@ public class OrderServiceTests
 
         var item1 = savedOrder.Items.First(i => i.ProductId == product1.Id);
         Assert.Equal("Mechanical Keyboard", item1.ProductName);
+        Assert.Equal("Electronics", item1.CategoryName);
         Assert.Equal(100.00m, item1.UnitPrice);
         Assert.Equal(2, item1.Quantity);
         Assert.Equal(200.00m, item1.TotalPrice);

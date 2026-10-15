@@ -25,5 +25,7 @@ public record CreateProductRequest(
     string? Description,
 
     [property: Range(0.01, 1000000.00, ErrorMessage = "Price must be greater than zero.")]
-    decimal Price
+    decimal Price,
+
+    Guid? CategoryId = null
 );

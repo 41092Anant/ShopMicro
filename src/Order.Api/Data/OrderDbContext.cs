@@ -51,6 +51,7 @@ public class OrderDbContext : DbContext
             entity.ToTable("OrderItems");
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ProductName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.CategoryName).HasMaxLength(100);
             entity.Property(e => e.UnitPrice).HasPrecision(18, 2);
             entity.Property(e => e.TotalPrice).HasPrecision(18, 2);
         });

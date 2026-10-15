@@ -18,5 +18,6 @@ public record CatalogProductDto(
     Guid Id,
     string Name,
     decimal Price,
-    bool IsActive
+    bool IsActive,
+    string? CategoryName = null
 );

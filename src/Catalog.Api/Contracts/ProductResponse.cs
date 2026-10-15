@@ -16,5 +16,7 @@ public record ProductResponse(
     string? Description,
     decimal Price,
     bool IsActive,
-    DateTime CreatedUtc
+    DateTime CreatedUtc,
+    Guid? CategoryId = null,
+    string? CategoryName = null
 );

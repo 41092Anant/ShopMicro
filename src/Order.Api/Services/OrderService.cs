@@ -79,6 +79,7 @@ public class OrderService : IOrderService
                 OrderId = order.Id,
                 ProductId = product.Id,
                 ProductName = product.Name,
+                CategoryName = product.CategoryName,
                 UnitPrice = product.Price,
                 Quantity = item.Quantity,
                 TotalPrice = lineTotal,
@@ -109,6 +110,7 @@ public class OrderService : IOrderService
             Id = i.Id,
             ProductId = i.ProductId,
             ProductName = i.ProductName,
+            CategoryName = i.CategoryName,
             UnitPrice = i.UnitPrice,
             Quantity = i.Quantity,
             TotalPrice = i.TotalPrice
