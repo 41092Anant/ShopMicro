@@ -33,6 +33,7 @@ builder.Services.AddDbContext<CatalogDbContext>(options =>
 
 // Register application service dependencies (Scoped = created once per HTTP request)
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 var app = builder.Build();
 

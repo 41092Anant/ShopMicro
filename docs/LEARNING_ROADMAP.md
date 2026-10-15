@@ -64,6 +64,13 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 1.18**: Configure standardized RFC 7807 `ProblemDetails` and OpenAPI documentation in `Program.cs`.
 - [x] **Task 1.19**: Create `src/Catalog.Api/Catalog.Api.http` to test all endpoints.
 
+#### Milestone 1E: Category Taxonomy
+- [x] **Task 1.20**: Create `Category` entity with 1-to-many relationship to `Product` in `CatalogDbContext`.
+- [x] **Task 1.21**: Generate PostgreSQL migration `AddCategorySupport`.
+- [x] **Task 1.22**: Implement `CreateCategoryRequest` and `CategoryResponse` DTOs with validation.
+- [x] **Task 1.23**: Implement `ICategoryService` and `CategoryService` with async methods.
+- [x] **Task 1.24**: Implement `CategoriesController` (`GET /categories`, `GET /categories/{id}`, `POST /categories`, `GET /categories/{id}/products`).
+
 ---
 
 ### Phase 2: Unit Testing & CI Pipeline

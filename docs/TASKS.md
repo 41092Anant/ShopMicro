@@ -40,6 +40,13 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 1.16**: Configure centralized error handling (`ProblemDetails`) and OpenAPI documentation in `Program.cs`.
 - [x] **Task 1.17**: Create `Catalog.Api.http` file to manually execute and verify all endpoints.
 
+### Milestone E: Category Taxonomy
+- [x] **Task 1.18**: Create `Category` entity with 1-to-many relationship to `Product` in `CatalogDbContext`.
+- [x] **Task 1.19**: Generate PostgreSQL migration `AddCategorySupport`.
+- [x] **Task 1.20**: Implement `CreateCategoryRequest` and `CategoryResponse` DTOs with validation.
+- [x] **Task 1.21**: Implement `ICategoryService` and `CategoryService` with async methods.
+- [x] **Task 1.22**: Implement `CategoriesController` (`GET /categories`, `GET /categories/{id}`, `POST /categories`, `GET /categories/{id}/products`).
+
 ---
 
 ## Phase 2: Unit Testing & CI

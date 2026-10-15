@@ -120,3 +120,39 @@ DELETE {{Catalog.Api_HostAddress}}/products/{{productId}}
 # Attempts to delete a non-existent product. Returns RFC 7807 ProblemDetails.
 DELETE {{Catalog.Api_HostAddress}}/products/ffffffff-ffff-ffff-ffff-ffffffffffff
 Accept: application/json
+
+###
+
+### 13. GET all categories
+# Retrieves list of all categories in the catalog
+GET {{Catalog.Api_HostAddress}}/categories
+Accept: application/json
+
+###
+
+### 14. POST - Create Category (Success: 201 Created)
+# Creates a new product category
+POST {{Catalog.Api_HostAddress}}/categories
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Electronics",
+  "description": "Smartphones, laptops, monitors, and computer accessories"
+}
+
+###
+
+### 15. GET Category by ID
+# Replace with a real category GUID from request 14 above
+GET {{Catalog.Api_HostAddress}}/categories/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+###
+
+### 16. GET Products by Category ID
+# Retrieves all products classified under this category
+GET {{Catalog.Api_HostAddress}}/categories/00000000-0000-0000-0000-000000000000/products
+Accept: application/json
+
+###
