@@ -161,4 +161,38 @@ public class OrdersControllerTests
         var problem = Assert.IsType<ProblemDetails>(errorResult.Value);
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, problem.Status);
     }
+
+    [Fact]
+    public async Task Create_WhenDownstreamTimeout_Returns504GatewayTimeoutWithProblemDetails()
+    {
+        // Arrange
+        var stubService = new StubOrderService
+        {
+            CreateHandler = (_, _) => throw new TimeoutException("Downstream timeout")
+                // When HttpClient throws TaskCanceledException due to timeout, it's an OperationCanceledException
+        };
+
+        // Simulate OperationCanceledException thrown by HttpClient timeout (not by caller's token)
+        var stubServiceWithTimeout = new StubOrderService
+        {
+            CreateHandler = (_, _) => Task.FromException<OrderResponse>(new OperationCanceledException("HttpClient timeout"))
+        };
+
+        var controller = new OrdersController(stubServiceWithTimeout, NullLogger<OrdersController>.Instance);
+        var request = new CreateOrderRequest
+        {
+            CustomerEmail = "buyer@example.com",
+            Items = [new CreateOrderItemRequest { ProductId = Guid.NewGuid(), Quantity = 1 }]
+        };
+
+        // Act (caller token is CancellationToken.None, so caller did NOT request cancellation)
+        var result = await controller.Create(request, CancellationToken.None);
+
+        // Assert
+        var timeoutResult = Assert.IsType<ObjectResult>(result.Result);
+        Assert.Equal(StatusCodes.Status504GatewayTimeout, timeoutResult.StatusCode);
+        var problem = Assert.IsType<ProblemDetails>(timeoutResult.Value);
+        Assert.Equal(StatusCodes.Status504GatewayTimeout, problem.Status);
+        Assert.Equal("Catalog Service Timeout", problem.Title);
+    }
 }

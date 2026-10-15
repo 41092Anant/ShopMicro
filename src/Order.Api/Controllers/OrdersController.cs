@@ -61,6 +61,7 @@ public class OrdersController : ControllerBase
     [ProducesResponseType(typeof(OrderResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status504GatewayTimeout)]
     public async Task<ActionResult<OrderResponse>> Create(
         [FromBody] CreateOrderRequest request,
         CancellationToken cancellationToken)
@@ -87,6 +88,16 @@ public class OrdersController : ControllerBase
                 Status = StatusCodes.Status503ServiceUnavailable,
                 Title = "Catalog Service Unavailable",
                 Detail = "Unable to validate products with the Catalog service. Please retry shortly."
+            });
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            _logger.LogError(ex, "Downstream Catalog.Api request timed out during order placement.");
+            return StatusCode(StatusCodes.Status504GatewayTimeout, new ProblemDetails
+            {
+                Status = StatusCodes.Status504GatewayTimeout,
+                Title = "Catalog Service Timeout",
+                Detail = "The Catalog service timed out while validating products. Please retry shortly."
             });
         }
     }

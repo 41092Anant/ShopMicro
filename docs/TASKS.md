@@ -72,7 +72,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 4.8**: Configure resilience handler (timeouts, bounded retries).
 - [x] **Task 4.9**: Implement `POST /orders` (validates products with Catalog API, calculates totals, saves order).
 - [x] **Task 4.10**: Implement `GET /orders/{id}`.
-- [ ] **Task 4.11**: Handle downstream Catalog API downtime gracefully with RFC 7807 error responses.
+- [x] **Task 4.11**: Handle downstream Catalog API downtime gracefully with RFC 7807 error responses.
 
 ## Phase 5: YARP Gateway & Redis Caching
 - Tasks will be detailed when Phase 4 is complete.
