@@ -112,7 +112,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 ---
 
 ### Phase 5: YARP Gateway & Redis Caching
-- [ ] **Task 5.1**: Create `Gateway` ASP.NET Core project on port `5000`.
+- [x] **Task 5.1**: Create `Gateway` ASP.NET Core project on port `5000`.
 - [ ] **Task 5.2**: Install and configure `Yarp.ReverseProxy`.
 - [ ] **Task 5.3**: Configure routes for `/catalog/{**catch-all}` and `/orders/{**catch-all}`.
 - [ ] **Task 5.4**: Add Redis service to `docker-compose.yml`.
