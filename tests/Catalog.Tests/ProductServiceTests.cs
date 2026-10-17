@@ -1,23 +1,27 @@
 namespace Catalog.Tests;
 
+using System.Text.Json;
 using Catalog.Api.Contracts;
 using Catalog.Api.Data;
 using Catalog.Api.Models;
 using Catalog.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 
 /// <summary>
-/// Unit tests for ProductService business logic and EF Core database operations.
+/// Unit tests for ProductService business logic, EF Core database operations,
+/// and Cache-Aside distributed caching behavior.
 /// 
 /// WHY WE CREATED THIS:
-/// Verifies database interactions (queries, updates, deletions) in an isolated in-memory EF Core store.
-/// 
-/// CONCEPT: IN-MEMORY DATABASE ISOLATION
-/// By generating a unique database name (Guid.NewGuid()) for each test, each test executes against
-/// an empty, pristine database with no shared state or test pollution.
+/// Verifies database interactions and distributed cache lookups/populations in isolation
+/// without requiring an external PostgreSQL instance or Redis server.
 /// </summary>
 public class ProductServiceTests
 {
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
     private static CatalogDbContext CreateDbContext()
     {
         var options = new DbContextOptionsBuilder<CatalogDbContext>()
@@ -27,11 +31,17 @@ public class ProductServiceTests
         return new CatalogDbContext(options);
     }
 
+    private static IDistributedCache CreateDistributedCache()
+    {
+        return new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
+    }
+
     [Fact]
     public async Task GetByIdAsync_WhenProductExists_ReturnsProductResponse()
     {
         // Arrange
         await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
         var existingProduct = new Product
         {
             Id = Guid.NewGuid(),
@@ -44,7 +54,7 @@ public class ProductServiceTests
         await dbContext.Products.AddAsync(existingProduct);
         await dbContext.SaveChangesAsync();
 
-        var service = new ProductService(dbContext);
+        var service = new ProductService(dbContext, cache);
 
         // Act
         var result = await service.GetByIdAsync(existingProduct.Id);
@@ -58,11 +68,84 @@ public class ProductServiceTests
     }
 
     [Fact]
+    public async Task GetByIdAsync_WhenCacheMiss_FetchesFromDbAndPopulatesCache()
+    {
+        // Arrange
+        await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
+        var existingProduct = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = "Mechanical Keyboard",
+            Description = "Hot-swappable tactile switches",
+            Price = 89.99m,
+            IsActive = true,
+            CreatedUtc = DateTime.UtcNow
+        };
+        await dbContext.Products.AddAsync(existingProduct);
+        await dbContext.SaveChangesAsync();
+
+        var service = new ProductService(dbContext, cache);
+
+        // Act
+        var result = await service.GetByIdAsync(existingProduct.Id);
+
+        // Assert - fetched correctly from database
+        Assert.NotNull(result);
+        Assert.Equal(existingProduct.Id, result.Id);
+        Assert.Equal("Mechanical Keyboard", result.Name);
+
+        // Assert - populated into distributed cache with product:id key
+        var cachedJson = await cache.GetStringAsync($"product:{existingProduct.Id}");
+        Assert.NotNull(cachedJson);
+        var cachedProduct = JsonSerializer.Deserialize<ProductResponse>(cachedJson, JsonOptions);
+        Assert.NotNull(cachedProduct);
+        Assert.Equal(existingProduct.Id, cachedProduct.Id);
+        Assert.Equal("Mechanical Keyboard", cachedProduct.Name);
+    }
+
+    [Fact]
+    public async Task GetByIdAsync_WhenCacheHit_ReturnsCachedProductWithoutQueryingDb()
+    {
+        // Arrange - Database is completely empty, cache holds the item
+        await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
+        var productId = Guid.NewGuid();
+        var cachedResponse = new ProductResponse(
+            productId,
+            "Cached Ultra-Wide Monitor",
+            "Retrieved directly from Redis cache",
+            499.99m,
+            true,
+            DateTime.UtcNow,
+            null,
+            null
+        );
+        var serialized = JsonSerializer.Serialize(cachedResponse, JsonOptions);
+        await cache.SetStringAsync($"product:{productId}", serialized);
+
+        var service = new ProductService(dbContext, cache);
+
+        // Act
+        var result = await service.GetByIdAsync(productId);
+
+        // Assert - returned cached entity even though DB has no record
+        Assert.NotNull(result);
+        Assert.Equal(productId, result.Id);
+        Assert.Equal("Cached Ultra-Wide Monitor", result.Name);
+        Assert.Equal(499.99m, result.Price);
+
+        // Confirm DB remains untouched and empty
+        Assert.Empty(await dbContext.Products.ToListAsync());
+    }
+
+    [Fact]
     public async Task GetByIdAsync_WhenProductDoesNotExist_ReturnsNull()
     {
         // Arrange
         await using var dbContext = CreateDbContext();
-        var service = new ProductService(dbContext);
+        var cache = CreateDistributedCache();
+        var service = new ProductService(dbContext, cache);
         var nonExistentId = Guid.NewGuid();
 
         // Act
@@ -77,6 +160,7 @@ public class ProductServiceTests
     {
         // Arrange
         await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
         var existingProduct = new Product
         {
             Id = Guid.NewGuid(),
@@ -89,7 +173,7 @@ public class ProductServiceTests
         await dbContext.Products.AddAsync(existingProduct);
         await dbContext.SaveChangesAsync();
 
-        var service = new ProductService(dbContext);
+        var service = new ProductService(dbContext, cache);
         var updateRequest = new UpdateProductRequest(
             Name: "Updated 4K Monitor",
             Description: "4K UHD 144Hz IPS display",
@@ -118,7 +202,8 @@ public class ProductServiceTests
     {
         // Arrange
         await using var dbContext = CreateDbContext();
-        var service = new ProductService(dbContext);
+        var cache = CreateDistributedCache();
+        var service = new ProductService(dbContext, cache);
         var updateRequest = new UpdateProductRequest("Ghost Item", "No desc", 10.00m, true);
 
         // Act
@@ -133,6 +218,7 @@ public class ProductServiceTests
     {
         // Arrange
         await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
         var existingProduct = new Product
         {
             Id = Guid.NewGuid(),
@@ -145,7 +231,7 @@ public class ProductServiceTests
         await dbContext.Products.AddAsync(existingProduct);
         await dbContext.SaveChangesAsync();
 
-        var service = new ProductService(dbContext);
+        var service = new ProductService(dbContext, cache);
 
         // Act
         var result = await service.DeleteAsync(existingProduct.Id);
@@ -163,7 +249,8 @@ public class ProductServiceTests
     {
         // Arrange
         await using var dbContext = CreateDbContext();
-        var service = new ProductService(dbContext);
+        var cache = CreateDistributedCache();
+        var service = new ProductService(dbContext, cache);
 
         // Act
         var result = await service.DeleteAsync(Guid.NewGuid());

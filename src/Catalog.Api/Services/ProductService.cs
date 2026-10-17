@@ -1,36 +1,39 @@
 namespace Catalog.Api.Services;
 
+using System.Text.Json;
 using Catalog.Api.Contracts;
 using Catalog.Api.Data;
 using Catalog.Api.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
 
 /// <summary>
-/// Implementation of IProductService handling product business logic and EF Core database operations.
+/// Implementation of IProductService handling product business logic, EF Core database operations,
+/// and distributed cache caching (Cache-Aside pattern).
 /// 
 /// WHY WE CREATED THIS:
-/// This class encapsulates data access and business rules so our controllers remain thin and focused.
+/// Encapsulates product retrieval, persistence, and caching so controllers stay thin and focused.
 /// 
-/// CONCEPT: DEPENDENCY INJECTION (DI)
-/// Rather than creating 'new CatalogDbContext()' directly, the service receives it through constructor
-/// injection. ASP.NET Core manages the lifetime of CatalogDbContext (Scoped = one per HTTP request).
-/// 
-/// CONCEPT: EF CORE AsNoTracking()
-/// By default, EF Core tracks entities in memory so it can detect changes when SaveChangesAsync() is called.
-/// For read-only operations (like GetAllAsync and GetByIdAsync), 'AsNoTracking()' disables change tracking,
-/// which significantly reduces memory usage and speeds up query execution.
-/// 
-/// CONCEPT: DTO MAPPING (MapToResponse)
-/// We manually map the internal Product entity to the public ProductResponse record. This keeps
-/// database models decoupled from public contracts without needing heavy third-party mapping libraries.
+/// CONCEPT: CACHE-ASIDE PATTERN
+/// Read requests first check the distributed cache (Redis) via IDistributedCache.
+/// - Cache hit: return the deserialized object directly (~sub-millisecond latency).
+/// - Cache miss: query the relational store (PostgreSQL via EF Core), populate the cache with a TTL,
+///   and return the data to the caller.
 /// </summary>
 public class ProductService : IProductService
 {
     private readonly CatalogDbContext _dbContext;
+    private readonly IDistributedCache _cache;
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+    private static readonly DistributedCacheEntryOptions CacheOptions = new()
+    {
+        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5)
+    };
 
-    public ProductService(CatalogDbContext dbContext)
+    public ProductService(CatalogDbContext dbContext, IDistributedCache cache)
     {
         _dbContext = dbContext;
+        _cache = cache;
     }
 
     public async Task<IReadOnlyList<ProductResponse>> GetAllAsync(CancellationToken cancellationToken = default)
@@ -46,12 +49,51 @@ public class ProductService : IProductService
 
     public async Task<ProductResponse?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
+        var cacheKey = $"product:{id}";
+
+        // 1. Attempt cache lookup (Cache-Aside)
+        try
+        {
+            var cachedJson = await _cache.GetStringAsync(cacheKey, cancellationToken);
+            if (!string.IsNullOrEmpty(cachedJson))
+            {
+                var cachedProduct = JsonSerializer.Deserialize<ProductResponse>(cachedJson, JsonOptions);
+                if (cachedProduct is not null)
+                {
+                    return cachedProduct;
+                }
+            }
+        }
+        catch
+        {
+            // Transient cache failure: fall back to primary database query
+        }
+
+        // 2. Cache miss: Query PostgreSQL via EF Core
         var product = await _dbContext.Products
             .AsNoTracking()
             .Include(p => p.Category)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
 
-        return product is null ? null : MapToResponse(product);
+        if (product is null)
+        {
+            return null;
+        }
+
+        var response = MapToResponse(product);
+
+        // 3. Populate cache with TTL (5 minutes) for subsequent requests
+        try
+        {
+            var serialized = JsonSerializer.Serialize(response, JsonOptions);
+            await _cache.SetStringAsync(cacheKey, serialized, CacheOptions, cancellationToken);
+        }
+        catch
+        {
+            // Cache write failure: return retrieved data without failing the request
+        }
+
+        return response;
     }
 
     public async Task<ProductResponse> CreateAsync(CreateProductRequest request, CancellationToken cancellationToken = default)
