@@ -1,0 +1,49 @@
+@Gateway_HostAddress = http://localhost:5000
+@productId = 00000000-0000-0000-0000-000000000000
+@orderId = 00000000-0000-0000-0000-000000000000
+
+### 1. Gateway Forwarding -> Catalog API: GET all products
+# Forwarded to http://localhost:5001/products via /catalog prefix removal
+GET {{Gateway_HostAddress}}/catalog/products
+Accept: application/json
+
+###
+
+### 2. Gateway Forwarding -> Catalog API: GET all categories
+# Forwarded to http://localhost:5001/categories via /catalog prefix removal
+GET {{Gateway_HostAddress}}/catalog/categories
+Accept: application/json
+
+###
+
+### 3. Gateway Forwarding -> Catalog API: GET single product
+# Forwarded to http://localhost:5001/products/{{productId}}
+GET {{Gateway_HostAddress}}/catalog/products/{{productId}}
+Accept: application/json
+
+###
+
+### 4. Gateway Forwarding -> Order API: POST Create Order
+# Forwarded directly to http://localhost:5002/orders
+POST {{Gateway_HostAddress}}/orders
+Content-Type: application/json
+Accept: application/json
+
+{
+  "customerEmail": "customer@example.com",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 1
+    }
+  ]
+}
+
+###
+
+### 5. Gateway Forwarding -> Order API: GET order by ID
+# Forwarded to http://localhost:5002/orders/{{orderId}}
+GET {{Gateway_HostAddress}}/orders/{{orderId}}
+Accept: application/json
+
+###
