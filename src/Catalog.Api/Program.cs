@@ -31,6 +31,14 @@ builder.Services.AddDbContext<CatalogDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
+// Configure Redis distributed cache (IDistributedCache)
+var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConnectionString;
+    options.InstanceName = "Catalog_";
+});
+
 // Register application service dependencies (Scoped = created once per HTTP request)
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();

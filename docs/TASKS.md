@@ -86,7 +86,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 5.2**: Install and configure `Yarp.ReverseProxy`.
 - [x] **Task 5.3**: Configure routes for `/catalog/{**catch-all}` and `/orders/{**catch-all}`.
 - [x] **Task 5.4**: Add Redis service to `docker-compose.yml`.
-- [ ] **Task 5.5**: Add `Microsoft.Extensions.Caching.StackExchangeRedis` to `Catalog.Api`.
+- [x] **Task 5.5**: Add `Microsoft.Extensions.Caching.StackExchangeRedis` to `Catalog.Api`.
 - [ ] **Task 5.6**: Implement Cache-Aside pattern for `GET /products/{id}` with short TTL.
 - [ ] **Task 5.7**: Implement cache invalidation when products are created, updated, or deleted.
 

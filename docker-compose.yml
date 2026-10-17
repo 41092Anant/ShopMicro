@@ -33,8 +33,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
       - ASPNETCORE_HTTP_PORTS=5001
       - ConnectionStrings__CatalogDb=Host=catalog-db;Port=5432;Database=${POSTGRES_DB:-catalogdb};Username=${POSTGRES_USER:-postgres};Password=${POSTGRES_PASSWORD:-postgres}
+      - ConnectionStrings__Redis=redis:6379
     depends_on:
       catalog-db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - shopmicro-network
