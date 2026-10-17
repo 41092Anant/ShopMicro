@@ -60,6 +60,23 @@ services:
     networks:
       - shopmicro-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: shopmicro-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - shopmicro-network
+
 networks:
   shopmicro-network:
     name: shopmicro-network
@@ -70,3 +87,5 @@ volumes:
     name: shopmicro-catalog-db-data
   order-db-data:
     name: shopmicro-order-db-data
+  redis-data:
+    name: shopmicro-redis-data
