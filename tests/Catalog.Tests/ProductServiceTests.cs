@@ -258,4 +258,101 @@ public class ProductServiceTests
         // Assert
         Assert.False(result);
     }
+
+    [Fact]
+    public async Task CreateAsync_PreWarmsCacheWithNewProduct()
+    {
+        // Arrange
+        await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
+        var service = new ProductService(dbContext, cache);
+        var request = new CreateProductRequest("Gaming Mouse", "Wireless 26K DPI optical sensor", 79.99m, null);
+
+        // Act
+        var result = await service.CreateAsync(request);
+
+        // Assert - product created in DB
+        Assert.NotNull(result);
+        Assert.Equal("Gaming Mouse", result.Name);
+
+        // Assert - cache pre-warmed
+        var cachedJson = await cache.GetStringAsync($"product:{result.Id}");
+        Assert.NotNull(cachedJson);
+        var cached = JsonSerializer.Deserialize<ProductResponse>(cachedJson, JsonOptions);
+        Assert.NotNull(cached);
+        Assert.Equal(result.Id, cached.Id);
+        Assert.Equal("Gaming Mouse", cached.Name);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WhenProductExists_EvictsCachedEntry()
+    {
+        // Arrange
+        await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
+        var existingProduct = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = "Old Monitor",
+            Description = "1080p 60Hz",
+            Price = 100.00m,
+            IsActive = true,
+            CreatedUtc = DateTime.UtcNow
+        };
+        await dbContext.Products.AddAsync(existingProduct);
+        await dbContext.SaveChangesAsync();
+
+        // Pre-populate cache with old data
+        var oldCachedResponse = new ProductResponse(existingProduct.Id, "Old Monitor", "1080p 60Hz", 100.00m, true, DateTime.UtcNow);
+        await cache.SetStringAsync($"product:{existingProduct.Id}", JsonSerializer.Serialize(oldCachedResponse, JsonOptions));
+
+        var service = new ProductService(dbContext, cache);
+        var updateRequest = new UpdateProductRequest("New OLED Monitor", "4K OLED 240Hz", 899.99m, true);
+
+        // Act
+        var result = await service.UpdateAsync(existingProduct.Id, updateRequest);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("New OLED Monitor", result.Name);
+
+        // Assert - stale cache entry must be evicted (null)
+        var cachedAfterUpdate = await cache.GetStringAsync($"product:{existingProduct.Id}");
+        Assert.Null(cachedAfterUpdate);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WhenProductExists_EvictsCachedEntry()
+    {
+        // Arrange
+        await using var dbContext = CreateDbContext();
+        var cache = CreateDistributedCache();
+        var existingProduct = new Product
+        {
+            Id = Guid.NewGuid(),
+            Name = "Item To Be Deleted",
+            Description = "Temporary",
+            Price = 15.00m,
+            IsActive = true,
+            CreatedUtc = DateTime.UtcNow
+        };
+        await dbContext.Products.AddAsync(existingProduct);
+        await dbContext.SaveChangesAsync();
+
+        // Pre-populate cache with item
+        var cachedResponse = new ProductResponse(existingProduct.Id, "Item To Be Deleted", "Temporary", 15.00m, true, DateTime.UtcNow);
+        await cache.SetStringAsync($"product:{existingProduct.Id}", JsonSerializer.Serialize(cachedResponse, JsonOptions));
+
+        var service = new ProductService(dbContext, cache);
+
+        // Act
+        var result = await service.DeleteAsync(existingProduct.Id);
+
+        // Assert
+        Assert.True(result);
+
+        // Assert - cache entry must be evicted (null)
+        var cachedAfterDelete = await cache.GetStringAsync($"product:{existingProduct.Id}");
+        Assert.Null(cachedAfterDelete);
+    }
 }

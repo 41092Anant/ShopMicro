@@ -117,7 +117,20 @@ public class ProductService : IProductService
             await _dbContext.Entry(product).Reference(p => p.Category).LoadAsync(cancellationToken);
         }
 
-        return MapToResponse(product);
+        var response = MapToResponse(product);
+
+        // Cache pre-warming: write the newly created product to cache
+        try
+        {
+            var serialized = JsonSerializer.Serialize(response, JsonOptions);
+            await _cache.SetStringAsync($"product:{product.Id}", serialized, CacheOptions, cancellationToken);
+        }
+        catch
+        {
+            // Cache write failure: return response without failing the request
+        }
+
+        return response;
     }
 
     public async Task<ProductResponse?> UpdateAsync(Guid id, UpdateProductRequest request, CancellationToken cancellationToken = default)
@@ -137,6 +150,16 @@ public class ProductService : IProductService
 
         await _dbContext.SaveChangesAsync(cancellationToken);
 
+        // Cache invalidation: evict stale cache entry so subsequent reads fetch fresh data
+        try
+        {
+            await _cache.RemoveAsync($"product:{id}", cancellationToken);
+        }
+        catch
+        {
+            // Cache eviction failure: do not block returning updated entity
+        }
+
         return MapToResponse(product);
     }
 
@@ -150,6 +173,16 @@ public class ProductService : IProductService
 
         _dbContext.Products.Remove(product);
         await _dbContext.SaveChangesAsync(cancellationToken);
+
+        // Cache invalidation: evict deleted product from cache
+        try
+        {
+            await _cache.RemoveAsync($"product:{id}", cancellationToken);
+        }
+        catch
+        {
+            // Cache eviction failure: do not block returning success
+        }
 
         return true;
     }
