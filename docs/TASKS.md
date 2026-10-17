@@ -91,7 +91,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 5.7**: Implement cache invalidation when products are created, updated, or deleted.
 
 ## Phase 6: RabbitMQ & Asynchronous Notification Worker
-- [ ] **Task 6.1**: Add RabbitMQ service with Management UI (`15672` / `5672`) to `docker-compose.yml`.
+- [x] **Task 6.1**: Add RabbitMQ service with Management UI (`15672` / `5672`) to `docker-compose.yml`.
 - [ ] **Task 6.2**: Define shared event contract `OrderCreatedEvent` in an isolated contracts project `Contracts`.
 - [ ] **Task 6.3**: Add MassTransit to `Order.Api` for event publishing.
 - [ ] **Task 6.4**: Create `Notification.Worker` worker service project.

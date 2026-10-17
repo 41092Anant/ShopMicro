@@ -80,6 +80,27 @@ services:
     networks:
       - shopmicro-network
 
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    container_name: shopmicro-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - shopmicro-network
+
 networks:
   shopmicro-network:
     name: shopmicro-network
@@ -92,3 +113,5 @@ volumes:
     name: shopmicro-order-db-data
   redis-data:
     name: shopmicro-redis-data
+  rabbitmq-data:
+    name: shopmicro-rabbitmq-data

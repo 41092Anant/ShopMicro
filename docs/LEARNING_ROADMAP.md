@@ -123,7 +123,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 ---
 
 ### Phase 6: RabbitMQ, Asynchronous Events & Notification Worker
-- [ ] **Task 6.1**: Add RabbitMQ service with Management UI (port 15672) to `docker-compose.yml`.
+- [x] **Task 6.1**: Add RabbitMQ service with Management UI (port 15672) to `docker-compose.yml`.
 - [ ] **Task 6.2**: Define shared event contract `OrderCreatedEvent` in an isolated contracts package/project.
 - [ ] **Task 6.3**: Add MassTransit to `Order.Api` for event publishing.
 - [ ] **Task 6.4**: Create `Notification.Worker` worker service project.
