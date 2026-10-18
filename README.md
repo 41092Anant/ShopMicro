@@ -63,4 +63,6 @@ d:/CICD/
 * **Phase 1:** Catalog API and PostgreSQL (Completed)
 * **Phase 2:** Unit Testing and CI Pipeline (Completed)
 * **Phase 3:** Docker & Local Compose (Completed)
-* **Phase 4:** Order API & Synchronous Inter-Service Calls (Upcoming)
+* **Phase 4:** Order API & Synchronous Inter-Service Calls (Completed)
+* **Phase 5:** YARP Gateway & Redis Caching (Completed)
+* **Phase 6:** RabbitMQ & Asynchronous Notification Worker (In Progress - Task 6.3 Complete)

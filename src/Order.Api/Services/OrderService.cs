@@ -1,5 +1,7 @@
 namespace Order.Api.Services;
 
+using global::Contracts;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Order.Api.Clients;
 using Order.Api.Contracts;
@@ -7,23 +9,35 @@ using Order.Api.Data;
 using Order.Api.Models;
 
 /// <summary>
-/// Service implementation managing customer orders and coordinating with Catalog.Api.
+/// Service implementation managing customer orders, coordinating with Catalog.Api,
+/// and publishing asynchronous domain events to RabbitMQ via MassTransit.
 /// 
 /// CONCEPT: HISTORICAL DATA SNAPSHOTTING
 /// When creating an order line item, we fetch the current product price and name from Catalog.Api
 /// and store them as permanent, immutable snapshots inside SQL Server's OrderItems table.
 /// Even if Catalog changes prices tomorrow, past orders retain their financial integrity.
+/// 
+/// CONCEPT: ASYNCHRONOUS EVENT PUBLISHING
+/// After persisting the order to SQL Server, we publish OrderCreatedEvent to RabbitMQ.
+/// This allows decoupled worker services (e.g. Notification.Worker) to process emails/SMS
+/// in the background without delaying the HTTP response or coupling services together.
 /// </summary>
 public class OrderService : IOrderService
 {
     private readonly OrderDbContext _dbContext;
     private readonly ICatalogClient _catalogClient;
+    private readonly IPublishEndpoint _publishEndpoint;
     private readonly ILogger<OrderService> _logger;
 
-    public OrderService(OrderDbContext dbContext, ICatalogClient catalogClient, ILogger<OrderService> logger)
+    public OrderService(
+        OrderDbContext dbContext,
+        ICatalogClient catalogClient,
+        IPublishEndpoint publishEndpoint,
+        ILogger<OrderService> logger)
     {
         _dbContext = dbContext;
         _catalogClient = catalogClient;
+        _publishEndpoint = publishEndpoint;
         _logger = logger;
     }
 
@@ -94,6 +108,27 @@ public class OrderService : IOrderService
 
         _logger.LogInformation("Order {OrderId} successfully placed for customer {CustomerEmail} totaling {TotalAmount:C}.",
             order.Id, order.CustomerEmail, order.TotalAmount);
+
+        // Publish OrderCreatedEvent to RabbitMQ via MassTransit
+        var eventItems = order.Items.Select(item => new OrderItemDto(
+            item.ProductId,
+            item.ProductName,
+            item.Quantity,
+            item.UnitPrice,
+            item.TotalPrice,
+            item.CategoryName
+        )).ToList();
+
+        var orderCreatedEvent = new OrderCreatedEvent(
+            order.Id,
+            order.CustomerEmail,
+            order.TotalAmount,
+            order.CreatedUtc,
+            eventItems
+        );
+
+        await _publishEndpoint.Publish(orderCreatedEvent, cancellationToken);
+        _logger.LogInformation("Published OrderCreatedEvent for order {OrderId} to RabbitMQ.", order.Id);
 
         return MapToResponse(order);
     }

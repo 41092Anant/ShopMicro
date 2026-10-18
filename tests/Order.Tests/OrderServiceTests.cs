@@ -1,7 +1,10 @@
 namespace Order.Tests;
 
+using Contracts;
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 using Order.Api.Clients;
 using Order.Api.Contracts;
 using Order.Api.Data;
@@ -9,7 +12,8 @@ using Order.Api.Models;
 using Order.Api.Services;
 
 /// <summary>
-/// Unit tests for OrderService verifying business logic, calculations, and Catalog integration.
+/// Unit tests for OrderService verifying business logic, calculations, Catalog integration,
+/// and asynchronous OrderCreatedEvent publishing via MassTransit.
 /// </summary>
 public class OrderServiceTests
 {
@@ -39,18 +43,19 @@ public class OrderServiceTests
     }
 
     [Fact]
-    public async Task CreateAsync_WhenProductsAreValid_CreatesOrderAndCalculatesTotals()
+    public async Task CreateAsync_WhenProductsAreValid_CreatesOrderCalculatesTotalsAndPublishesEvent()
     {
         // Arrange
         await using var dbContext = CreateDbContext();
         var stubCatalog = new StubCatalogClient();
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
 
         var product1 = new CatalogProductDto(Guid.NewGuid(), "Mechanical Keyboard", 100.00m, true, "Electronics");
         var product2 = new CatalogProductDto(Guid.NewGuid(), "Gaming Mouse", 50.00m, true, "Accessories");
         stubCatalog.AddProduct(product1);
         stubCatalog.AddProduct(product2);
 
-        var service = new OrderService(dbContext, stubCatalog, NullLogger<OrderService>.Instance);
+        var service = new OrderService(dbContext, stubCatalog, publishEndpoint, NullLogger<OrderService>.Instance);
 
         var request = new CreateOrderRequest
         {
@@ -84,15 +89,27 @@ public class OrderServiceTests
         Assert.Equal(100.00m, item1.UnitPrice);
         Assert.Equal(2, item1.Quantity);
         Assert.Equal(200.00m, item1.TotalPrice);
+
+        // Verify OrderCreatedEvent was published to MassTransit with all expected fields
+        await publishEndpoint.Received(1).Publish(
+            Arg.Is<OrderCreatedEvent>(e =>
+                e.OrderId == result.Id &&
+                e.CustomerEmail == "gamer@example.com" &&
+                e.TotalAmount == 350.00m &&
+                e.Items.Count == 2 &&
+                e.Items.Any(i => i.ProductId == product1.Id && i.ProductName == "Mechanical Keyboard" && i.CategoryName == "Electronics") &&
+                e.Items.Any(i => i.ProductId == product2.Id && i.ProductName == "Gaming Mouse" && i.CategoryName == "Accessories")),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task CreateAsync_WhenProductNotFoundInCatalog_ThrowsInvalidOperationException()
+    public async Task CreateAsync_WhenProductNotFoundInCatalog_ThrowsInvalidOperationExceptionAndDoesNotPublish()
     {
         // Arrange
         await using var dbContext = CreateDbContext();
         var stubCatalog = new StubCatalogClient(); // Empty catalog
-        var service = new OrderService(dbContext, stubCatalog, NullLogger<OrderService>.Instance);
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
+        var service = new OrderService(dbContext, stubCatalog, publishEndpoint, NullLogger<OrderService>.Instance);
 
         var missingProductId = Guid.NewGuid();
         var request = new CreateOrderRequest
@@ -107,19 +124,23 @@ public class OrderServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAsync(request));
         Assert.Contains(missingProductId.ToString(), exception.Message);
+
+        // Verify event was NOT published on failed order creation
+        await publishEndpoint.DidNotReceiveWithAnyArgs().Publish(default!, default);
     }
 
     [Fact]
-    public async Task CreateAsync_WhenProductIsInactive_ThrowsInvalidOperationException()
+    public async Task CreateAsync_WhenProductIsInactive_ThrowsInvalidOperationExceptionAndDoesNotPublish()
     {
         // Arrange
         await using var dbContext = CreateDbContext();
         var stubCatalog = new StubCatalogClient();
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
 
         var inactiveProduct = new CatalogProductDto(Guid.NewGuid(), "Discontinued Item", 45.00m, false);
         stubCatalog.AddProduct(inactiveProduct);
 
-        var service = new OrderService(dbContext, stubCatalog, NullLogger<OrderService>.Instance);
+        var service = new OrderService(dbContext, stubCatalog, publishEndpoint, NullLogger<OrderService>.Instance);
 
         var request = new CreateOrderRequest
         {
@@ -133,6 +154,9 @@ public class OrderServiceTests
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateAsync(request));
         Assert.Contains("not available for purchase", exception.Message);
+
+        // Verify event was NOT published on inactive item rejection
+        await publishEndpoint.DidNotReceiveWithAnyArgs().Publish(default!, default);
     }
 
     [Fact]
@@ -164,7 +188,8 @@ public class OrderServiceTests
         await dbContext.Orders.AddAsync(order);
         await dbContext.SaveChangesAsync();
 
-        var service = new OrderService(dbContext, new StubCatalogClient(), NullLogger<OrderService>.Instance);
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
+        var service = new OrderService(dbContext, new StubCatalogClient(), publishEndpoint, NullLogger<OrderService>.Instance);
 
         // Act
         var result = await service.GetByIdAsync(order.Id);
@@ -183,7 +208,8 @@ public class OrderServiceTests
     {
         // Arrange
         await using var dbContext = CreateDbContext();
-        var service = new OrderService(dbContext, new StubCatalogClient(), NullLogger<OrderService>.Instance);
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
+        var service = new OrderService(dbContext, new StubCatalogClient(), publishEndpoint, NullLogger<OrderService>.Instance);
 
         // Act
         var result = await service.GetByIdAsync(Guid.NewGuid());

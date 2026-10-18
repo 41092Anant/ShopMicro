@@ -1,3 +1,4 @@
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Order.Api.Clients;
 using Order.Api.Data;
@@ -47,6 +48,26 @@ builder.Services.AddHttpClient<ICatalogClient, CatalogClient>(client =>
 
 // Register application services (Scoped = created once per HTTP request)
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+// Configure MassTransit with RabbitMQ message broker
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var port = ushort.TryParse(builder.Configuration["RabbitMQ:Port"], out var p) ? p : (ushort)5672;
+        var user = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var pass = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+        cfg.Host(host, port, "/", h =>
+        {
+            h.Username(user);
+            h.Password(pass);
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
 
 var app = builder.Build();
 

@@ -27,3 +27,7 @@ To avoid port conflicts during local multi-service development:
 ## ADR-005: Error Response Standard
 * **Decision:** Standardize on **RFC 7807 `ProblemDetails`**.
 * **Reasoning:** Provides a uniform error structure across all microservices so API consumers (and other services) can parse errors predictably.
+
+## ADR-006: Asynchronous Messaging & Event Contracts
+* **Decision:** Use **MassTransit** over **RabbitMQ** with isolated C# records in a shared `Contracts` class library.
+* **Reasoning:** Provides a resilient, decoupled transport abstraction without leaking internal EF Core database entities across microservice boundaries.
