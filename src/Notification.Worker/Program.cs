@@ -1,7 +1,11 @@
 using MassTransit;
 using Notification.Worker.Consumers;
+using Notification.Worker.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
+
+// Register idempotency store to prevent duplicate message side-effects
+builder.Services.AddSingleton<IProcessedMessageStore, InMemoryProcessedMessageStore>();
 
 builder.Services.AddMassTransit(x =>
 {

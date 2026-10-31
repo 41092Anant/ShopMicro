@@ -31,3 +31,8 @@ To avoid port conflicts during local multi-service development:
 ## ADR-006: Asynchronous Messaging & Event Contracts
 * **Decision:** Use **MassTransit** over **RabbitMQ** with isolated C# records in a shared `Contracts` class library.
 * **Reasoning:** Provides a resilient, decoupled transport abstraction without leaking internal EF Core database entities across microservice boundaries.
+
+## ADR-007: Idempotent Consumer Pattern
+* **Decision:** Message consumers track processed message/entity keys via an `IProcessedMessageStore` before executing side effects.
+* **Reasoning:** RabbitMQ guarantees at-least-once message delivery. Network retransmissions or consumer retries can cause duplicate deliveries. Deduplicating on unique keys (e.g. `order-{OrderId}`) guarantees side effects (like sending emails or triggering fulfillment) execute strictly once.
+
