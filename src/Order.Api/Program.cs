@@ -49,9 +49,18 @@ builder.Services.AddHttpClient<ICatalogClient, CatalogClient>(client =>
 // Register application services (Scoped = created once per HTTP request)
 builder.Services.AddScoped<IOrderService, OrderService>();
 
-// Configure MassTransit with RabbitMQ message broker
+// Configure MassTransit with RabbitMQ message broker and transactional EF Core Outbox
 builder.Services.AddMassTransit(x =>
 {
+    // Transactional Outbox pattern:
+    // Stashes published messages in SQL Server outbox tables within the same transaction as the order.
+    // Background worker then delivers outbox messages to RabbitMQ asynchronously, eliminating dual-write risks.
+    x.AddEntityFrameworkOutbox<OrderDbContext>(o =>
+    {
+        o.UseSqlServer();
+        o.UseBusOutbox();
+    });
+
     x.UsingRabbitMq((context, cfg) =>
     {
         var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";

@@ -160,6 +160,40 @@ public class OrderServiceTests
     }
 
     [Fact]
+    public async Task CreateAsync_WhenTransactionalOutboxUsed_PublishesEventAndPersistsOrder()
+    {
+        // Arrange
+        await using var dbContext = CreateDbContext();
+        var stubCatalog = new StubCatalogClient();
+        var publishEndpoint = Substitute.For<IPublishEndpoint>();
+
+        var product = new CatalogProductDto(Guid.NewGuid(), "Desk Mat", 25.00m, true, "Accessories");
+        stubCatalog.AddProduct(product);
+
+        var service = new OrderService(dbContext, stubCatalog, publishEndpoint, NullLogger<OrderService>.Instance);
+
+        var request = new CreateOrderRequest
+        {
+            CustomerEmail = "outbox@example.com",
+            Items = [new CreateOrderItemRequest { ProductId = product.Id, Quantity = 2 }]
+        };
+
+        // Act
+        var response = await service.CreateAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        var savedOrder = await dbContext.Orders.Include(o => o.Items).FirstOrDefaultAsync(o => o.Id == response.Id);
+        Assert.NotNull(savedOrder);
+        Assert.Equal(50.00m, savedOrder.TotalAmount);
+
+        // Verify publish was called for outbox staging
+        await publishEndpoint.Received(1).Publish(
+            Arg.Is<OrderCreatedEvent>(e => e.OrderId == response.Id && e.CustomerEmail == "outbox@example.com" && e.TotalAmount == 50.00m),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task GetByIdAsync_WhenOrderExists_ReturnsOrderResponseWithItems()
     {
         // Arrange

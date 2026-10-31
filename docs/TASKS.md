@@ -97,4 +97,4 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 6.4**: Create `Notification.Worker` worker service project.
 - [x] **Task 6.5**: Add MassTransit consumer in `Notification.Worker` for `OrderCreatedEvent`.
 - [x] **Task 6.6**: Implement idempotent message processing to handle duplicate delivery safely.
-- [ ] **Task 6.7**: Implement EF Core Outbox pattern in `Order.Api` to guarantee atomic database write + message publish.
+- [x] **Task 6.7**: Implement EF Core Outbox pattern in `Order.Api` to guarantee atomic database write + message publish.

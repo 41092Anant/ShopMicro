@@ -104,12 +104,11 @@ public class OrderService : IOrderService
         order.TotalAmount = totalAmount;
 
         _dbContext.Orders.Add(order);
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
-        _logger.LogInformation("Order {OrderId} successfully placed for customer {CustomerEmail} totaling {TotalAmount:C}.",
-            order.Id, order.CustomerEmail, order.TotalAmount);
-
-        // Publish OrderCreatedEvent to RabbitMQ via MassTransit
+        // Transactional Outbox Pattern:
+        // Publish OrderCreatedEvent via IPublishEndpoint before SaveChangesAsync.
+        // With MassTransit EF Core Outbox configured, the event is saved into the outbox table
+        // within the exact same database transaction as the order, preventing dual-write inconsistencies.
         var eventItems = order.Items.Select(item => new OrderItemDto(
             item.ProductId,
             item.ProductName,
@@ -128,7 +127,12 @@ public class OrderService : IOrderService
         );
 
         await _publishEndpoint.Publish(orderCreatedEvent, cancellationToken);
-        _logger.LogInformation("Published OrderCreatedEvent for order {OrderId} to RabbitMQ.", order.Id);
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        _logger.LogInformation("Order {OrderId} successfully placed for customer {CustomerEmail} totaling {TotalAmount:C}.",
+            order.Id, order.CustomerEmail, order.TotalAmount);
+        _logger.LogInformation("Staged OrderCreatedEvent for order {OrderId} in transactional outbox.", order.Id);
 
         return MapToResponse(order);
     }

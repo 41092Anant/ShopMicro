@@ -1,5 +1,6 @@
 namespace Order.Api.Data;
 
+using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Order.Api.Models;
 
@@ -29,6 +30,11 @@ public class OrderDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        // MassTransit Transactional Outbox entities
+        modelBuilder.AddInboxStateEntity();
+        modelBuilder.AddOutboxMessageEntity();
+        modelBuilder.AddOutboxStateEntity();
 
         modelBuilder.Entity<Order>(entity =>
         {

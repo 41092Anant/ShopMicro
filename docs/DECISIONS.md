@@ -36,3 +36,8 @@ To avoid port conflicts during local multi-service development:
 * **Decision:** Message consumers track processed message/entity keys via an `IProcessedMessageStore` before executing side effects.
 * **Reasoning:** RabbitMQ guarantees at-least-once message delivery. Network retransmissions or consumer retries can cause duplicate deliveries. Deduplicating on unique keys (e.g. `order-{OrderId}`) guarantees side effects (like sending emails or triggering fulfillment) execute strictly once.
 
+## ADR-008: Transactional Outbox Pattern
+* **Decision:** Use MassTransit's Entity Framework Core Outbox in `Order.Api` (`AddEntityFrameworkOutbox<OrderDbContext>`) with `UseSqlServer()` and `UseBusOutbox()`.
+* **Reasoning:** Solves the dual-write problem across distributed databases and message brokers. Saving the order and staging the outgoing event in SQL Server outbox tables within the exact same database transaction guarantees that events are only published if and only if the database transaction succeeds.
+
+
