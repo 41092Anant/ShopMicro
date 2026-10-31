@@ -5,12 +5,21 @@ using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Configure Serilog structured logging
-builder.Services.AddSerilog((services, lc) => lc
-    .ReadFrom.Configuration(builder.Configuration)
-    .ReadFrom.Services(services)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+// Configure Serilog structured logging with Console and Seq sinks
+builder.Services.AddSerilog((services, lc) =>
+{
+    lc
+        .ReadFrom.Configuration(builder.Configuration)
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console();
+
+    var seqUrl = builder.Configuration["Seq:ServerUrl"];
+    if (!string.IsNullOrWhiteSpace(seqUrl))
+    {
+        lc.WriteTo.Seq(seqUrl);
+    }
+});
 
 // Register idempotency store to prevent duplicate message side-effects
 builder.Services.AddSingleton<IProcessedMessageStore, InMemoryProcessedMessageStore>();

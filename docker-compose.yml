@@ -101,6 +101,25 @@ services:
     networks:
       - shopmicro-network
 
+  seq:
+    image: datalust/seq:latest
+    container_name: shopmicro-seq
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "${SEQ_PORT:-5341}:80"
+    volumes:
+      - seq-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - shopmicro-network
+
 networks:
   shopmicro-network:
     name: shopmicro-network
@@ -115,3 +134,6 @@ volumes:
     name: shopmicro-redis-data
   rabbitmq-data:
     name: shopmicro-rabbitmq-data
+  seq-data:
+    name: shopmicro-seq-data
+

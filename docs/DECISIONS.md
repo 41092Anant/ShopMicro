@@ -23,6 +23,7 @@ To avoid port conflicts during local multi-service development:
 * **SQL Server:** `localhost:1433`
 * **RabbitMQ:** `localhost:5672` (Broker) / `localhost:15672` (Management UI)
 * **Redis:** `localhost:6379`
+* **Seq (Centralized Logging):** `http://localhost:5341` (UI & ingestion)
 
 ## ADR-005: Error Response Standard
 * **Decision:** Standardize on **RFC 7807 `ProblemDetails`**.
