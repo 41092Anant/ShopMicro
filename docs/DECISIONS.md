@@ -45,5 +45,10 @@ To avoid port conflicts during local multi-service development:
 * **Decision:** Standardize on **Serilog** across all microservices and workers, enriched with contextual properties (`Application`, `traceId`, LogContext).
 * **Reasoning:** Replaces plain string console logs with queryable, structured JSON key-value properties. Enables centralized log ingestion (e.g. Seq) and distributed log correlation without parsing fragile unstructured log strings.
 
+## ADR-010: Distributed Tracing with OpenTelemetry
+* **Decision:** Instrument all microservices and workers with **OpenTelemetry**, exporting traces via OTLP (`OpenTelemetry.Exporter.OpenTelemetryProtocol`).
+* **Reasoning:** User requests traverse reverse proxies (Gateway), inter-service HTTP calls (Order API -> Catalog API), databases (PostgreSQL, SQL Server), and asynchronous message queues (RabbitMQ -> Worker). OpenTelemetry automatically propagates W3C TraceContext standards (`traceparent`) across service boundaries into unified end-to-end distributed traces.
+
+
 
 

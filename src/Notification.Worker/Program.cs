@@ -1,6 +1,8 @@
 using MassTransit;
 using Notification.Worker.Consumers;
 using Notification.Worker.Services;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Serilog;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -20,6 +22,22 @@ builder.Services.AddSerilog((services, lc) =>
         lc.WriteTo.Seq(seqUrl);
     }
 });
+
+// Configure OpenTelemetry distributed tracing
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Notification.Worker"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddHttpClientInstrumentation()
+            .AddSource("MassTransit")
+            .AddOtlpExporter(options =>
+            {
+                var endpoint = builder.Configuration["OpenTelemetry:Endpoint"] ?? "http://localhost:5341/ingest/otlp/v1/traces";
+                options.Endpoint = new Uri(endpoint);
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+    });
 
 // Register idempotency store to prevent duplicate message side-effects
 builder.Services.AddSingleton<IProcessedMessageStore, InMemoryProcessedMessageStore>();

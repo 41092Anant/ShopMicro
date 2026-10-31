@@ -102,7 +102,7 @@ This document breaks down our microservices learning into atomic, single-step ta
 ## Phase 7: Observability (Logs, Traces, Metrics)
 - [x] **Task 7.1**: Add Serilog structured logging across all services.
 - [x] **Task 7.2**: Add Seq logging container to `docker-compose.yml`.
-- [ ] **Task 7.3**: Configure OpenTelemetry tracing in Gateway, Catalog API, Order API, and Worker.
+- [x] **Task 7.3**: Configure OpenTelemetry tracing in Gateway, Catalog API, Order API, and Worker.
 - [ ] **Task 7.4**: Trace an end-to-end user request through Gateway -> Order API -> Catalog API -> RabbitMQ -> Worker.
 - [ ] **Task 7.5**: Add health check endpoints (`/health/live`, `/health/ready`) to all services.
 

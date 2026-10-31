@@ -1,5 +1,7 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using Order.Api.Clients;
 using Order.Api.Data;
 using Order.Api.Services;
@@ -22,6 +24,23 @@ builder.Host.UseSerilog((context, services, configuration) =>
         configuration.WriteTo.Seq(seqUrl);
     }
 });
+
+// Configure OpenTelemetry distributed tracing
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Order.Api"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddSource("MassTransit")
+            .AddOtlpExporter(options =>
+            {
+                var endpoint = builder.Configuration["OpenTelemetry:Endpoint"] ?? "http://localhost:5341/ingest/otlp/v1/traces";
+                options.Endpoint = new Uri(endpoint);
+                options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.HttpProtobuf;
+            });
+    });
 
 // Add services to the container.
 builder.Services.AddControllers();
