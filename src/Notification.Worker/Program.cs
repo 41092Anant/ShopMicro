@@ -1,25 +1,26 @@
 using MassTransit;
 using Notification.Worker.Consumers;
+using Notification.Worker.Health;
 using Notification.Worker.Services;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 
-var builder = Host.CreateApplicationBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 // Configure Serilog structured logging with Console and Seq sinks
-builder.Services.AddSerilog((services, lc) =>
+builder.Host.UseSerilog((context, services, configuration) =>
 {
-    lc
-        .ReadFrom.Configuration(builder.Configuration)
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .WriteTo.Console();
 
-    var seqUrl = builder.Configuration["Seq:ServerUrl"];
+    var seqUrl = context.Configuration["Seq:ServerUrl"];
     if (!string.IsNullOrWhiteSpace(seqUrl))
     {
-        lc.WriteTo.Seq(seqUrl);
+        configuration.WriteTo.Seq(seqUrl);
     }
 });
 
@@ -29,6 +30,7 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing =>
     {
         tracing
+            .AddAspNetCoreInstrumentation()
             .AddHttpClientInstrumentation()
             .AddSource("MassTransit")
             .AddOtlpExporter(options =>
@@ -42,6 +44,7 @@ builder.Services.AddOpenTelemetry()
 // Register idempotency store to prevent duplicate message side-effects
 builder.Services.AddSingleton<IProcessedMessageStore, InMemoryProcessedMessageStore>();
 
+// Configure MassTransit RabbitMQ consumer
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<OrderCreatedConsumer>();
@@ -63,5 +66,45 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
-var host = builder.Build();
-host.Run();
+// Configure health checks (Liveness: worker running, Readiness: RabbitMQ bus reachable)
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"])
+    .AddCheck<RabbitMqHealthCheck>("rabbitmq", tags: ["ready"]);
+
+var app = builder.Build();
+
+app.UseSerilogRequestLogging();
+
+// Map health check endpoints
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = WriteHealthResponse
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = WriteHealthResponse
+});
+
+static Task WriteHealthResponse(HttpContext context, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    var response = new
+    {
+        status = report.Status.ToString(),
+        totalDuration = report.TotalDuration.ToString(),
+        checks = report.Entries.Select(e => new
+        {
+            component = e.Key,
+            status = e.Value.Status.ToString(),
+            description = e.Value.Description,
+            duration = e.Value.Duration.ToString(),
+            error = e.Value.Exception?.Message
+        })
+    };
+    return context.Response.WriteAsJsonAsync(response);
+}
+
+app.Run();

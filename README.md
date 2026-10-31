@@ -29,7 +29,7 @@ A practical, phased microservices learning project following clean, real-world i
                                                    |
                                                    v
                                           +-----------------+
-                                          | Notification    |
+                                          | Notification    | (Port: 5003)
                                           | Worker          |
                                           +-----------------+
 ```
@@ -66,4 +66,5 @@ d:/CICD/
 * **Phase 4:** Order API & Synchronous Inter-Service Calls (Completed)
 * **Phase 5:** YARP Gateway & Redis Caching (Completed)
 * **Phase 6:** RabbitMQ & Asynchronous Notification Worker (Completed)
-* **Phase 7:** Observability (Logs, Traces, Metrics) & Health Checks (Upcoming)
+* **Phase 7:** Observability (Logs, Traces, Metrics) & Health Checks (Completed)
+* **Phase 8:** Azure Cloud Deployment (Upcoming)

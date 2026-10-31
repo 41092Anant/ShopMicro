@@ -114,6 +114,12 @@ builder.Services.AddMassTransit(x =>
     });
 });
 
+// Configure health checks (Liveness: process healthy, Readiness: SQL Server and RabbitMQ reachable)
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"])
+    .AddDbContextCheck<OrderDbContext>("order-db", tags: ["ready"])
+    .AddCheck<Order.Api.Health.RabbitMqHealthCheck>("rabbitmq", tags: ["ready"]);
+
 var app = builder.Build();
 
 // Centralized error handling pipeline
@@ -133,6 +139,38 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// Map health check endpoints
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = WriteHealthResponse
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = WriteHealthResponse
+});
+
 app.MapControllers();
+
+static Task WriteHealthResponse(HttpContext context, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    var response = new
+    {
+        status = report.Status.ToString(),
+        totalDuration = report.TotalDuration.ToString(),
+        checks = report.Entries.Select(e => new
+        {
+            component = e.Key,
+            status = e.Value.Status.ToString(),
+            description = e.Value.Description,
+            duration = e.Value.Duration.ToString(),
+            error = e.Value.Exception?.Message
+        })
+    };
+    return context.Response.WriteAsJsonAsync(response);
+}
 
 app.Run();

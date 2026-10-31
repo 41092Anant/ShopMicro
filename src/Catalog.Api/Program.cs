@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,8 +68,15 @@ builder.Services.AddDbContext<CatalogDbContext>(options =>
     options.UseNpgsql(connectionString);
 });
 
-// Configure Redis distributed cache (IDistributedCache)
+// Configure Redis distributed cache (IDistributedCache) and connection multiplexer
 var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var options = ConfigurationOptions.Parse(redisConnectionString);
+    options.AbortOnConnectFail = false;
+    options.ConnectTimeout = 2000;
+    return ConnectionMultiplexer.Connect(options);
+});
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnectionString;
@@ -78,6 +86,12 @@ builder.Services.AddStackExchangeRedisCache(options =>
 // Register application service dependencies (Scoped = created once per HTTP request)
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+
+// Configure health checks (Liveness: process healthy, Readiness: PostgreSQL and Redis reachable)
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"])
+    .AddDbContextCheck<CatalogDbContext>("catalog-db", tags: ["ready"])
+    .AddCheck<Catalog.Api.Health.RedisHealthCheck>("redis", tags: ["ready"]);
 
 var app = builder.Build();
 
@@ -100,6 +114,38 @@ app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// Map health check endpoints
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = WriteHealthResponse
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = WriteHealthResponse
+});
+
 app.MapControllers();
+
+static Task WriteHealthResponse(HttpContext context, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    var response = new
+    {
+        status = report.Status.ToString(),
+        totalDuration = report.TotalDuration.ToString(),
+        checks = report.Entries.Select(e => new
+        {
+            component = e.Key,
+            status = e.Value.Status.ToString(),
+            description = e.Value.Description,
+            duration = e.Value.Duration.ToString(),
+            error = e.Value.Exception?.Message
+        })
+    };
+    return context.Response.WriteAsJsonAsync(response);
+}
 
 app.Run();

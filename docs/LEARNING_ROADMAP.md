@@ -138,7 +138,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 - [x] **Task 7.2**: Add Seq logging container to `docker-compose.yml`.
 - [x] **Task 7.3**: Configure OpenTelemetry tracing in Gateway, Catalog API, Order API, and Worker.
 - [x] **Task 7.4**: Trace an end-to-end user request through Gateway -> Order API -> Catalog API -> RabbitMQ -> Worker.
-- [ ] **Task 7.5**: Add health check endpoints (`/health/live`, `/health/ready`) to all services.
+- [x] **Task 7.5**: Add health check endpoints (`/health/live`, `/health/ready`) to all services.
 
 ---
 

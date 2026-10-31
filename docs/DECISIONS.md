@@ -19,6 +19,7 @@ To avoid port conflicts during local multi-service development:
 * **Gateway (YARP):** `http://localhost:5000`
 * **Catalog.Api:** `http://localhost:5001`
 * **Order.Api:** `http://localhost:5002`
+* **Notification.Worker:** `http://localhost:5003` (Health probes)
 * **PostgreSQL:** `localhost:5432`
 * **SQL Server:** `localhost:1433`
 * **RabbitMQ:** `localhost:5672` (Broker) / `localhost:15672` (Management UI)
@@ -48,6 +49,10 @@ To avoid port conflicts during local multi-service development:
 ## ADR-010: Distributed Tracing with OpenTelemetry
 * **Decision:** Instrument all microservices and workers with **OpenTelemetry**, exporting traces via OTLP (`OpenTelemetry.Exporter.OpenTelemetryProtocol`).
 * **Reasoning:** User requests traverse reverse proxies (Gateway), inter-service HTTP calls (Order API -> Catalog API), databases (PostgreSQL, SQL Server), and asynchronous message queues (RabbitMQ -> Worker). OpenTelemetry automatically propagates W3C TraceContext standards (`traceparent`) across service boundaries into unified end-to-end distributed traces.
+
+## ADR-011: Liveness and Readiness Probes
+* **Decision:** Expose dedicated `/health/live` and `/health/ready` endpoints across all microservices and workers using ASP.NET Core Health Checks.
+* **Reasoning:** Decoupling liveness from readiness prevents cascading restart loops. Liveness probes (`/health/live`) verify the process is alive and responsive without checking remote dependencies. Readiness probes (`/health/ready`) verify connectivity to backing infrastructure (PostgreSQL, SQL Server, Redis, RabbitMQ) so container orchestrators (Docker Compose, Kubernetes, Azure Container Apps) only route traffic to instances capable of servicing requests.
 
 
 

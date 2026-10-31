@@ -1,7 +1,60 @@
 @Gateway_HostAddress = http://localhost:5000
 @Catalog_HostAddress = http://localhost:5001
 @Order_HostAddress = http://localhost:5002
+@Worker_HostAddress = http://localhost:5003
 @Seq_HostAddress = http://localhost:5341
+
+# ==============================================================================
+# Health Checks (Task 7.5: Liveness & Readiness Probes)
+# ==============================================================================
+
+### Gateway - Liveness Probe
+GET {{Gateway_HostAddress}}/health/live
+Accept: application/json
+
+###
+
+### Gateway - Readiness Probe
+GET {{Gateway_HostAddress}}/health/ready
+Accept: application/json
+
+###
+
+### Catalog API - Liveness Probe
+GET {{Catalog_HostAddress}}/health/live
+Accept: application/json
+
+###
+
+### Catalog API - Readiness Probe (Checks PostgreSQL and Redis)
+GET {{Catalog_HostAddress}}/health/ready
+Accept: application/json
+
+###
+
+### Order API - Liveness Probe
+GET {{Order_HostAddress}}/health/live
+Accept: application/json
+
+###
+
+### Order API - Readiness Probe (Checks SQL Server and RabbitMQ)
+GET {{Order_HostAddress}}/health/ready
+Accept: application/json
+
+###
+
+### Notification Worker - Liveness Probe
+GET {{Worker_HostAddress}}/health/live
+Accept: application/json
+
+###
+
+### Notification Worker - Readiness Probe (Checks RabbitMQ Consumer Bus)
+GET {{Worker_HostAddress}}/health/ready
+Accept: application/json
+
+###
 
 # ==============================================================================
 # ShopMicro End-to-End Distributed Trace Pipeline Verification (Task 7.4)

@@ -39,10 +39,46 @@ builder.Services.AddOpenTelemetry()
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
+// Configure health checks (Liveness: process healthy, Readiness: Gateway routing ready)
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["live"])
+    .AddCheck("self", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy(), tags: ["ready"]);
+
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
 
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+    ResponseWriter = WriteHealthResponse
+});
+
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready"),
+    ResponseWriter = WriteHealthResponse
+});
+
 app.MapReverseProxy();
+
+static Task WriteHealthResponse(HttpContext context, Microsoft.Extensions.Diagnostics.HealthChecks.HealthReport report)
+{
+    context.Response.ContentType = "application/json";
+    var response = new
+    {
+        status = report.Status.ToString(),
+        totalDuration = report.TotalDuration.ToString(),
+        checks = report.Entries.Select(e => new
+        {
+            component = e.Key,
+            status = e.Value.Status.ToString(),
+            description = e.Value.Description,
+            duration = e.Value.Duration.ToString(),
+            error = e.Value.Exception?.Message
+        })
+    };
+    return context.Response.WriteAsJsonAsync(response);
+}
 
 app.Run();
