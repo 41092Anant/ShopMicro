@@ -1,0 +1,79 @@
+@Gateway_HostAddress = http://localhost:5000
+@Catalog_HostAddress = http://localhost:5001
+@Order_HostAddress = http://localhost:5002
+@Seq_HostAddress = http://localhost:5341
+
+# ==============================================================================
+# ShopMicro End-to-End Distributed Trace Pipeline Verification (Task 7.4)
+#
+# This file exercises the complete distributed request lifecycle:
+# 1. Gateway (Port 5000): Ingests the initial HTTP request.
+# 2. Order API (Port 5002): Routed by Gateway, creates order.
+# 3. Catalog API (Port 5001): Called by Order API via resilient HttpClient.
+# 4. RabbitMQ (Port 5672): Receives published OrderCreatedEvent.
+# 5. Notification Worker: Consumes event asynchronously & performs idempotent dispatch.
+# 6. Seq (Port 5341): Centralizes all structured logs & OpenTelemetry distributed trace spans.
+# ==============================================================================
+
+### 1. Gateway Route Verification - Query Catalog Products via Gateway
+# Gateway routes '/catalog/{**catch-all}' directly to Catalog.Api (port 5001).
+GET {{Gateway_HostAddress}}/catalog/products
+Accept: application/json
+
+###
+
+### 2. Create Product in Catalog via Gateway
+# Creates a test product that will be ordered in Step 3.
+# Notice the custom W3C traceparent header to establish the root trace.
+# @name createProduct
+POST {{Gateway_HostAddress}}/catalog/products
+Content-Type: application/json
+Accept: application/json
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+
+{
+  "name": "Ultra-Wide Gaming Monitor",
+  "description": "34-inch curved OLED monitor",
+  "price": 799.99,
+  "categoryName": "Displays"
+}
+
+###
+
+### 3. Place Order via Gateway (Full End-to-End Distributed Trace)
+# Trace Flow:
+# [Gateway:5000] -> [Order.Api:5002] -> [Catalog.Api:5001] -> [RabbitMQ:5672] -> [Notification.Worker]
+#
+# Replace {{productId}} with the product ID returned in Step 2.
+@productId = 00000000-0000-0000-0000-000000000000
+POST {{Gateway_HostAddress}}/orders
+Content-Type: application/json
+Accept: application/json
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01
+
+{
+  "customerEmail": "alex.dev@example.com",
+  "items": [
+    {
+      "productId": "{{productId}}",
+      "quantity": 1
+    }
+  ]
+}
+
+###
+
+### 4. Fetch Placed Order via Gateway
+# Retrieves the order persisted in SQL Server through the Gateway route.
+@orderId = 00000000-0000-0000-0000-000000000000
+GET {{Gateway_HostAddress}}/orders/{{orderId}}
+Accept: application/json
+
+###
+
+### 5. Inspect Traces & Logs in Seq
+# Query Seq for the unified Trace ID across all 4 services.
+GET {{Seq_HostAddress}}/api/events?filter=@TraceId%20%3D%20'4bf92f3577b34da6a3ce929d0e0e4736'
+Accept: application/json
+
+###
