@@ -95,6 +95,6 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 6.2**: Define shared event contract `OrderCreatedEvent` in an isolated contracts project `Contracts`.
 - [x] **Task 6.3**: Add MassTransit to `Order.Api` for event publishing.
 - [x] **Task 6.4**: Create `Notification.Worker` worker service project.
-- [ ] **Task 6.5**: Add MassTransit consumer in `Notification.Worker` for `OrderCreatedEvent`.
+- [x] **Task 6.5**: Add MassTransit consumer in `Notification.Worker` for `OrderCreatedEvent`.
 - [ ] **Task 6.6**: Implement idempotent message processing to handle duplicate delivery safely.
 - [ ] **Task 6.7**: Implement EF Core Outbox pattern in `Order.Api` to guarantee atomic database write + message publish.

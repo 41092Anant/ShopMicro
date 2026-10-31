@@ -4,10 +4,12 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>$(NoWarn);NU1902;NU1903</NoWarn>
     <UserSecretsId>dotnet-Notification.Worker-d6bf55e4-de84-49c6-ba1d-3b0587a288af</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="9.2.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.11" />
   </ItemGroup>
 
