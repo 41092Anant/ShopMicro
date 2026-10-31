@@ -134,7 +134,7 @@ After completing each task, the mentor acts as a **Task Review Agent** and deliv
 ---
 
 ### Phase 7: Observability (Logs, Traces, Metrics)
-- [ ] **Task 7.1**: Add Serilog structured logging across all services.
+- [x] **Task 7.1**: Add Serilog structured logging across all services.
 - [ ] **Task 7.2**: Add Seq logging container to `docker-compose.yml`.
 - [ ] **Task 7.3**: Configure OpenTelemetry tracing in Gateway, Catalog API, Order API, and Worker.
 - [ ] **Task 7.4**: Trace an end-to-end user request through Gateway -> Order API -> Catalog API -> RabbitMQ -> Worker.

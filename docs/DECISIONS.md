@@ -40,4 +40,9 @@ To avoid port conflicts during local multi-service development:
 * **Decision:** Use MassTransit's Entity Framework Core Outbox in `Order.Api` (`AddEntityFrameworkOutbox<OrderDbContext>`) with `UseSqlServer()` and `UseBusOutbox()`.
 * **Reasoning:** Solves the dual-write problem across distributed databases and message brokers. Saving the order and staging the outgoing event in SQL Server outbox tables within the exact same database transaction guarantees that events are only published if and only if the database transaction succeeds.
 
+## ADR-009: Structured Logging with Serilog
+* **Decision:** Standardize on **Serilog** across all microservices and workers, enriched with contextual properties (`Application`, `traceId`, LogContext).
+* **Reasoning:** Replaces plain string console logs with queryable, structured JSON key-value properties. Enables centralized log ingestion (e.g. Seq) and distributed log correlation without parsing fragile unstructured log strings.
+
+
 

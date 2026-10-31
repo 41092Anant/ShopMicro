@@ -3,8 +3,16 @@ using Microsoft.EntityFrameworkCore;
 using Order.Api.Clients;
 using Order.Api.Data;
 using Order.Api.Services;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog structured logging
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -83,6 +91,9 @@ var app = builder.Build();
 // Centralized error handling pipeline
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+// Clean HTTP request logging with Serilog
+app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

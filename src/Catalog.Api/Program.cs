@@ -1,8 +1,16 @@
 using Catalog.Api.Data;
 using Catalog.Api.Services;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog structured logging
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -50,6 +58,9 @@ var app = builder.Build();
 // 2. UseStatusCodePages transforms empty error status codes (e.g. 404 for unknown routes) into RFC 7807 ProblemDetails.
 app.UseExceptionHandler();
 app.UseStatusCodePages();
+
+// Clean HTTP request logging with Serilog
+app.UseSerilogRequestLogging();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

@@ -98,3 +98,23 @@ This document breaks down our microservices learning into atomic, single-step ta
 - [x] **Task 6.5**: Add MassTransit consumer in `Notification.Worker` for `OrderCreatedEvent`.
 - [x] **Task 6.6**: Implement idempotent message processing to handle duplicate delivery safely.
 - [x] **Task 6.7**: Implement EF Core Outbox pattern in `Order.Api` to guarantee atomic database write + message publish.
+
+## Phase 7: Observability (Logs, Traces, Metrics)
+- [x] **Task 7.1**: Add Serilog structured logging across all services.
+- [ ] **Task 7.2**: Add Seq logging container to `docker-compose.yml`.
+- [ ] **Task 7.3**: Configure OpenTelemetry tracing in Gateway, Catalog API, Order API, and Worker.
+- [ ] **Task 7.4**: Trace an end-to-end user request through Gateway -> Order API -> Catalog API -> RabbitMQ -> Worker.
+- [ ] **Task 7.5**: Add health check endpoints (`/health/live`, `/health/ready`) to all services.
+
+## Phase 8: Azure Cloud Deployment
+- [ ] **Task 8.1**: Plan Azure resources, region, and cost budget alerts.
+- [ ] **Task 8.2**: Provision Azure Resource Group with cost controls.
+- [ ] **Task 8.3**: Deploy Azure Container Apps environment with private ingress for backend APIs.
+- [ ] **Task 8.4**: Provision Azure Database for PostgreSQL and Azure SQL Database.
+- [ ] **Task 8.5**: Set up Azure Key Vault with Managed Identity for zero-credential secrets management.
+- [ ] **Task 8.6**: Run end-to-end cloud smoke test.
+
+## Phase 9: Security, Rate Limiting & Portfolio Polish
+- [ ] **Task 9.1**: Add API rate limiting at Gateway.
+- [ ] **Task 9.2**: Add authentication & authorization checks.
+- [ ] **Task 9.3**: Finalize comprehensive documentation, architecture diagrams, and runbook.
